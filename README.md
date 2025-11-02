@@ -128,21 +128,7 @@ O frontend se comunica com o **GeoRisk API** (FastAPI) via endpoints:
 
 ## 👨‍💻 Autor
 
-Desenvolvido por **Guilherme Serafim**
+Desenvolvido por **Guiler**
 📍 Curitiba – Brasil
-💼 [LinkedIn](https://www.linkedin.com/in/guilhermeserafim) | 🌐 [Portfolio](https://guilhermeserafim.dev)
+💼 [LinkedIn](https://www.linkedin.com/in/guiserafim)
 
----
-
-## 🪪 Licença
-
-Distribuído sob a licença MIT.
-Veja `LICENSE` para mais informações.
-
-```
-
----
-
-Quer que eu monte uma **versão curta** (estilo README do GitHub com badges, demo GIF e comandos principais)?  
-Fica ótimo pra destacar o projeto na tua conta.
-```
