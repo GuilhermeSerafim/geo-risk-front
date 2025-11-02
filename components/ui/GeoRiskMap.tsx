@@ -17,7 +17,7 @@ export default function GeoRiskMap() {
   const [loading, setLoading] = useState(false);
   const [center, setCenter] = useState({ lng: -49.2415, lat: -25.4388 });
 
-  const [radius, setRadius] = useState(1000);
+  const [radius, setRadius] = useState(100);
   const radiusRef = useRef(radius);
   useEffect(() => {
     radiusRef.current = radius;
@@ -237,16 +237,43 @@ export default function GeoRiskMap() {
 
   return (
     <section className="w-full flex flex-col items-center gap-4 mt-6">
-      <div className="flex items-center gap-4">
-        <label className="text-sm font-medium">Raio (m):</label>
-        <input
-          type="number"
-          className="px-2 py-1 border rounded-md bg-background border-border w-28"
-          value={radius}
-          min={100}
-          step={100}
-          onChange={(e) => setRadius(parseInt(e.target.value || "0", 10))}
-        />
+      <div className="flex flex-wrap items-center gap-4">
+        {/* Campo de raio */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">Raio (m):</label>
+          <input
+            type="number"
+            className="px-2 py-1 border rounded-md bg-background border-border w-28"
+            value={radius}
+            min={100}
+            step={100}
+            onChange={(e) => setRadius(parseInt(e.target.value || "0", 10))}
+          />
+        </div>
+
+        {/* Campo de coordenadas */}
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium">Coordenadas:</label>
+          <input
+            type="text"
+            placeholder="-25.43, -49.27"
+            className="px-2 py-1 border rounded-md bg-background border-border w-44"
+            onBlur={(e) => {
+              const [lat, lng] = e.target.value
+                .split(",")
+                .map((v) => parseFloat(v.trim()));
+              if (!isNaN(lat) && !isNaN(lng)) {
+                setCenter({ lat, lng });
+                map.current?.flyTo({
+                  center: [lng, lat],
+                  zoom: 15,
+                  duration: 1000,
+                });
+                drawAndAnalyze({ lng, lat }, radiusRef.current);
+              }
+            }}
+          />
+        </div>
       </div>
 
       <div className="w-full h-[70vh] rounded-xl overflow-hidden shadow-lg mt-4">
