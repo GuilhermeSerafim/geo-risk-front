@@ -14,8 +14,22 @@ export default function GeoRiskMap() {
     null
   );
   const [riskData, setRiskData] = useState<any>(null);
-  const [radius, setRadius] = useState(1000);
   const [loading, setLoading] = useState(false);
+  const [center, setCenter] = useState({ lng: -49.2415, lat: -25.4388 });
+
+  const [radius, setRadius] = useState(1000);
+  const radiusRef = useRef(radius);
+  useEffect(() => {
+    radiusRef.current = radius;
+  }, [radius]);
+
+  const handleMapClick = async (e: mapboxgl.MapMouseEvent) => {
+    const { lng, lat } = e.lngLat;
+    const next = { lng, lat };
+    setCenter(next);
+    setCoords({ lat, lng });
+    await drawAndAnalyze(next, radiusRef.current);
+  };
 
   // inicializa o mapa
   useEffect(() => {
@@ -23,35 +37,41 @@ export default function GeoRiskMap() {
     if (!mapContainer.current) return;
 
     map.current = new mapboxgl.Map({
-      container: mapContainer.current,
+      container: mapContainer.current!,
       style: "mapbox://styles/mapbox/streets-v12",
-      center: [-49.27, -25.43], // centro de Curitiba
-      zoom: 12,
+      center: [center.lng, center.lat],
+      zoom: 15,
+      pitch: 60,
+      bearing: -20,
+      antialias: true,
     });
 
-    // adiciona interação de clique
-    map.current.on("click", async (e) => {
-      const { lat, lng } = e.lngLat;
-      setCoords({ lat, lng });
+    // quando o mapa terminar de carregar
+    map.current.on("load", async () => {
+      enable3D(map.current!);
+      await drawAndAnalyze(center, radiusRef.current);
 
-      // desenha o círculo no mapa
-      drawCircle(lng, lat, radius);
-
-      // chama API
-      setLoading(true);
-      try {
-        const data = await postRiskByCenterRadius({
-          lat,
-          lng,
-          radiusMeters: radius,
-        });
-        setRiskData(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
+      // ✅ registra o clique uma única vez, usando radiusRef
+      map.current!.on("click", handleMapClick);
     });
+
+    // ✅ cleanup — remove o listener ao desmontar
+    return () => {
+      map.current?.off("click", handleMapClick);
+      map.current?.remove();
+      map.current = null;
+    };
+  }, []);
+
+  // 🔁 redesenha automaticamente quando o raio mudar
+  useEffect(() => {
+    if (!map.current || !center) return;
+
+    const timeout = setTimeout(() => {
+      drawAndAnalyze(center, radius);
+    }, 400); // pequeno atraso pra evitar reanálises rápidas
+
+    return () => clearTimeout(timeout);
   }, [radius]);
 
   // função pra desenhar o círculo (área de análise)
@@ -63,8 +83,13 @@ export default function GeoRiskMap() {
       units: "kilometers",
     });
 
+    if (map.current.getLayer("circle-outline")) {
+      map.current.removeLayer("circle-outline");
+    }
     if (map.current.getLayer("circle")) {
       map.current.removeLayer("circle");
+    }
+    if (map.current.getSource("circle")) {
       map.current.removeSource("circle");
     }
 
@@ -83,6 +108,131 @@ export default function GeoRiskMap() {
     new mapboxgl.Marker({ color: "#1E90FF" })
       .setLngLat([lng, lat])
       .addTo(map.current);
+  }
+  function enable3D(map: mapboxgl.Map) {
+    // Adiciona terreno
+    if (!map.getSource("mapbox-dem")) {
+      map.addSource("mapbox-dem", {
+        type: "raster-dem",
+        url: "mapbox://mapbox.mapbox-terrain-dem-v1",
+        tileSize: 512,
+        maxzoom: 14,
+      });
+    }
+
+    map.setTerrain({ source: "mapbox-dem", exaggeration: 1.4 });
+
+    // Adiciona o céu
+    if (!map.getLayer("sky")) {
+      map.addLayer({
+        id: "sky",
+        type: "sky",
+        paint: {
+          "sky-type": "atmosphere",
+          "sky-atmosphere-sun": [0.0, 0.0],
+          "sky-atmosphere-sun-intensity": 15,
+        },
+      });
+    }
+
+    // Prédios 3D
+    const layers = map.getStyle().layers ?? [];
+    const labelLayerId = layers.find(
+      (l: any) => l.type === "symbol" && l.layout && l.layout["text-field"]
+    )?.id;
+
+    if (!map.getLayer("3d-buildings")) {
+      map.addLayer(
+        {
+          id: "3d-buildings",
+          source: "composite",
+          "source-layer": "building",
+          filter: ["==", "extrude", "true"],
+          type: "fill-extrusion",
+          minzoom: 15,
+          paint: {
+            "fill-extrusion-color": "#a8a29e",
+            "fill-extrusion-height": ["get", "height"],
+            "fill-extrusion-base": ["get", "min_height"],
+            "fill-extrusion-opacity": 0.6,
+          },
+        },
+        labelLayerId
+      );
+    }
+
+    map.easeTo({ pitch: 60, bearing: -20, duration: 1000 });
+  }
+
+  async function drawAndAnalyze(
+    center: { lng: number; lat: number },
+    radius: number
+  ) {
+    if (!map.current) return;
+    setLoading(true);
+    setRiskData(null);
+
+    try {
+      // 1️⃣ gera o círculo GeoJSON com Turf
+      const circle = turf.circle([center.lng, center.lat], radius / 1000, {
+        steps: 64,
+        units: "kilometers",
+      });
+
+      // 2️⃣ adiciona ou atualiza a camada no mapa
+      if (map.current.getSource("circle")) {
+        (map.current.getSource("circle") as mapboxgl.GeoJSONSource).setData(
+          circle as any
+        );
+      } else {
+        map.current.addSource("circle", { type: "geojson", data: circle });
+        map.current.addLayer({
+          id: "circle",
+          type: "fill",
+          source: "circle",
+          paint: {
+            "fill-color": "#0080ff",
+            "fill-opacity": 0.25,
+          },
+        });
+        map.current.addLayer({
+          id: "circle-outline",
+          type: "line",
+          source: "circle",
+          paint: {
+            "line-color": "#1E90FF",
+            "line-width": 2,
+          },
+        });
+      }
+
+      // 3️⃣ chama a API para análise de risco
+      const data = await postRiskByCenterRadius({
+        lat: center.lat,
+        lng: center.lng,
+        radiusMeters: radius,
+      });
+
+      // 4️⃣ atualiza UI e pinta o círculo conforme risco
+      setRiskData(data);
+      const color =
+        data.risk_level === "baixo"
+          ? "#22c55e"
+          : data.risk_level === "medio"
+          ? "#f59e0b"
+          : "#ef4444";
+
+      if (map.current.getLayer("circle")) {
+        map.current.setPaintProperty("circle", "fill-color", color);
+      }
+      if (map.current.getLayer("circle-outline")) {
+        map.current.setPaintProperty("circle-outline", "line-color", color);
+      }
+    } catch (err) {
+      console.error("Erro em drawAndAnalyze:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
@@ -103,13 +253,15 @@ export default function GeoRiskMap() {
         <div ref={mapContainer} className="w-full h-full" />
       </div>
 
-      {loading && <p className="text-sm text-muted-foreground">Analisando...</p>}
+      {loading && (
+        <p className="text-sm text-muted-foreground">Analisando...</p>
+      )}
 
       {riskData && (
         <div className="p-4 w-full max-w-xl bg-card/50 border rounded-lg mt-4 text-sm">
           <p>
-            🌍 <strong>Coordenadas:</strong>{" "}
-            {coords?.lat.toFixed(4)}, {coords?.lng.toFixed(4)}
+            🌍 <strong>Coordenadas:</strong> {coords?.lat.toFixed(4)},{" "}
+            {coords?.lng.toFixed(4)}
           </p>
           <p>
             🌊 <strong>Rio mais próximo:</strong> {riskData.rio_mais_proximo}
