@@ -2,7 +2,8 @@
 
 Interface interativa do **GeoRisk**, um sistema de análise geográfica e ambiental com foco em risco de alagamento urbano e declividade do terreno.
 
-![GeoRisk Screenshot](public/mapa.png)
+![GeoRisk Screenshot](public/img1.png)
+![GeoRisk Screenshot](public/img2.png)
 
 ---
 
