@@ -19,12 +19,40 @@ export async function postRiskPolygon(polygon: Polygon | Feature<Polygon>): Prom
       : (polygon as Polygon),
   };
 
-  const res = await fetch(`${process.env.NEXT_PUBLIC_API_BASE_URL}/geo/risk`, {
+  let apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
+  if (!apiBaseUrl) {
+    throw new Error(
+      "NEXT_PUBLIC_API_BASE_URL não está configurada. Crie um arquivo .env (ou .env.local) na raiz do projeto com: NEXT_PUBLIC_API_BASE_URL=http://localhost:8000"
+    );
+  }
+
+  // Normaliza a URL base: remove /docs se presente e remove barras no final
+  apiBaseUrl = apiBaseUrl.trim();
+  apiBaseUrl = apiBaseUrl.replace(/\/docs\/?$/, ""); // Remove /docs no final
+  apiBaseUrl = apiBaseUrl.replace(/\/+$/, ""); // Remove barras no final
+
+  // Permite configurar o endpoint via env, ou usa o padrão /geo/risk
+  const endpoint = process.env.NEXT_PUBLIC_API_RISK_ENDPOINT || "/geo/risk";
+  const url = `${apiBaseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
+  
+  // Debug: log apenas em desenvolvimento
+  if (process.env.NODE_ENV === "development") {
+    console.log("🔍 Chamando API:", url);
+    console.log("📦 Body:", JSON.stringify(body, null, 2));
+  }
+
+  const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  if (!res.ok) throw new Error(`/geo/risk falhou: ${res.status}`);
+  
+  if (!res.ok) {
+    const errorText = await res.text().catch(() => "");
+    const errorMessage = `Erro ${res.status} ao chamar ${url}${errorText ? ` - ${errorText}` : ""}`;
+    console.error("❌ Erro na API:", errorMessage);
+    throw new Error(errorMessage);
+  }
   return res.json();
 }
 
