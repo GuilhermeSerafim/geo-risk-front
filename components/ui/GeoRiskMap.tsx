@@ -69,6 +69,17 @@ export default function GeoRiskMap() {
     });
   }, [radius]);
 
+  // 🔁 redesenha automaticamente quando o raio mudar
+  useEffect(() => {
+    if (!map.current || !center) return;
+
+    const timeout = setTimeout(() => {
+      drawAndAnalyze(center, radius);
+    }, 400); // pequeno atraso pra evitar reanálises rápidas
+
+    return () => clearTimeout(timeout);
+  }, [radius]);
+
   // função pra desenhar o círculo (área de análise)
   function drawCircle(lng: number, lat: number, radius: number) {
     if (!map.current) return;
