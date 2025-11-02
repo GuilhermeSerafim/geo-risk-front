@@ -43,7 +43,7 @@ const itemVariants = {
 
 export default function FeaturesSection() {
   return (
-    <section className="py-20 px-4 bg-gradient-to-b from-background via-card/20 to-background">
+    <section className="py-20 px-4 bg-gradient-to-b from-background via-card/20 to-background" id="sobre-section">
       <div className="max-w-6xl mx-auto">
         <motion.div
           initial={{ opacity: 0, y: -20 }}
