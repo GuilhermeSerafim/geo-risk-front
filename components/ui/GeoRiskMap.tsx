@@ -4,6 +4,7 @@ import * as turf from "@turf/turf";
 import { useEffect, useRef, useState } from "react";
 import { postRiskByCenterRadius } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
+import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -53,6 +54,32 @@ export default function GeoRiskMap() {
       await drawAndAnalyze(center, radiusRef.current);
 
       // ✅ registra o clique uma única vez, usando radiusRef
+      map.current!.on("click", handleMapClick);
+    });
+
+    map.current.on("load", async () => {
+      enable3D(map.current!);
+      await drawAndAnalyze(center, radiusRef.current);
+
+      // ✅ Geocoder - campo de busca de endereço
+      const geocoder = new MapboxGeocoder({
+        accessToken: mapboxgl.accessToken as string,
+        mapboxgl: mapboxgl as any,
+        marker: false,
+        placeholder: "Buscar endereço ou bairro...",
+      });
+      map.current!.addControl(geocoder, "top-left");
+
+      // quando o usuário escolhe um resultado
+      geocoder.on("result", (e) => {
+        const { center } = e.result; // [lng, lat]
+        const next = { lng: center[0], lat: center[1] };
+        setCenter(next);
+        map.current!.flyTo({ center, zoom: 15, duration: 1000 });
+        drawAndAnalyze(next, radiusRef.current);
+      });
+
+      // listener de clique continua
       map.current!.on("click", handleMapClick);
     });
 
