@@ -315,10 +315,6 @@ export default function GeoRiskMap() {
       {riskData && (
         <div className="p-4 w-full max-w-xl bg-card/50 border rounded-lg mt-4 text-sm">
           <p>
-            🌍 <strong>Coordenadas:</strong> {coords?.lat.toFixed(4)},{" "}
-            {coords?.lng.toFixed(4)}
-          </p>
-          <p>
             🌊 <strong>Rio mais próximo:</strong> {riskData.rio_mais_proximo}
           </p>
           <p>
