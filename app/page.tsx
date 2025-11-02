@@ -11,7 +11,6 @@ export default function Home() {
     <main className="min-h-screen bg-background text-foreground">
       <HeroSection />
       <FeaturesSection />
-      <DemoSection />
       <GeoRiskMap/>
       <CTASection />
       <Footer />
