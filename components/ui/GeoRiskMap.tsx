@@ -21,11 +21,15 @@ export default function GeoRiskMap() {
 
   const [radius, setRadius] = useState(100);
   const radiusRef = useRef(radius);
+  const [hasInteracted, setHasInteracted] = useState(false);
+
+
   useEffect(() => {
     radiusRef.current = radius;
   }, [radius]);
 
   const handleMapClick = async (e: mapboxgl.MapMouseEvent) => {
+    setHasInteracted(true);
     const { lng, lat } = e.lngLat;
     const next = { lng, lat };
     setCenter(next);
@@ -33,11 +37,11 @@ export default function GeoRiskMap() {
     await drawAndAnalyze(next, radiusRef.current);
   };
 
-  // inicializa o mapa
-  useEffect(() => {
+// inicializa o mapa
+useEffect(() => {
     if (map.current) return;
     if (!mapContainer.current) return;
-
+  
     map.current = new mapboxgl.Map({
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/streets-v12",
@@ -47,20 +51,14 @@ export default function GeoRiskMap() {
       bearing: -20,
       antialias: true,
     });
-
+  
     // quando o mapa terminar de carregar
-    map.current.on("load", async () => {
+    map.current.on("load", () => {
       enable3D(map.current!);
-      await drawAndAnalyze(center, radiusRef.current);
-
-      // ✅ registra o clique uma única vez, usando radiusRef
+  
+      // ✅ registra o clique uma única vez
       map.current!.on("click", handleMapClick);
-    });
-
-    map.current.on("load", async () => {
-      enable3D(map.current!);
-      await drawAndAnalyze(center, radiusRef.current);
-
+  
       // ✅ Geocoder - campo de busca de endereço
       const geocoder = new MapboxGeocoder({
         accessToken: mapboxgl.accessToken as string,
@@ -69,20 +67,17 @@ export default function GeoRiskMap() {
         placeholder: "Buscar endereço ou bairro...",
       });
       map.current!.addControl(geocoder, "top-left");
-
+  
       // quando o usuário escolhe um resultado
       geocoder.on("result", (e) => {
         const { center } = e.result; // [lng, lat]
         const next = { lng: center[0], lat: center[1] };
         setCenter(next);
         map.current!.flyTo({ center, zoom: 15, duration: 1000 });
-        drawAndAnalyze(next, radiusRef.current);
+        drawAndAnalyze(next, radiusRef.current); // ✅ análise só após escolha
       });
-
-      // listener de clique continua
-      map.current!.on("click", handleMapClick);
     });
-
+  
     // ✅ cleanup — remove o listener ao desmontar
     return () => {
       map.current?.off("click", handleMapClick);
@@ -93,7 +88,7 @@ export default function GeoRiskMap() {
 
   // 🔁 redesenha automaticamente quando o raio mudar
   useEffect(() => {
-    if (!map.current || !center) return;
+    if (!map.current || !hasInteracted) return;
 
     const timeout = setTimeout(() => {
       drawAndAnalyze(center, radius);
