@@ -1,36 +1,134 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌍 GeoRisk Frontend
 
-## Getting Started
+Interface interativa do **GeoRisk**, um sistema de análise geográfica e ambiental com foco em risco de alagamento urbano e declividade do terreno.
 
-First, run the development server:
+![GeoRisk Screenshot](public/mapa.png)
+
+---
+
+## 🚀 Sobre o projeto
+
+O **GeoRisk Frontend** foi desenvolvido com **Next.js + React + Mapbox GL JS** para visualização geográfica em tempo real.  
+Ele se conecta à API do GeoRisk (FastAPI backend) para processar dados espaciais e exibir o **nível de risco** de um ponto ou área no mapa.
+
+A aplicação é capaz de:
+- Mostrar **mapas 3D** com terreno, prédios e camadas de análise.
+- Selecionar pontos manualmente no mapa.
+- Analisar áreas a partir de um **raio configurável** (em metros).
+- Buscar **endereços** via campo de pesquisa (Mapbox Geocoder).
+- Exibir explicações técnicas da IA com base nos dados retornados pela API.
+
+---
+
+## 🧠 Stack principal
+
+| Categoria | Tecnologias |
+|------------|--------------|
+| **Framework** | [Next.js 14](https://nextjs.org/) + React 18 |
+| **Mapa** | [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/guides/) + @turf/turf |
+| **Design System** | [Shadcn/UI](https://ui.shadcn.com/) + TailwindCSS |
+| **IA e Dados** | Integração com API GeoRisk (FastAPI) |
+| **Build** | TypeScript + Vite (Turbopack no dev) |
+
+---
+
+## ⚙️ Instalação e uso
+
+### 1️⃣ Clone o repositório
+```bash
+git clone https://github.com/seuusuario/georisk-frontend.git
+cd georisk-frontend
+````
+
+### 2️⃣ Instale as dependências
+
+```bash
+npm install
+```
+
+### 3️⃣ Configure o ambiente
+
+Crie um arquivo `.env.local` na raiz com as seguintes variáveis:
+
+```bash
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.sua_chave_do_mapbox
+NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+```
+
+> 🔑 Para gerar o token do Mapbox:
+> [https://account.mapbox.com/access-tokens/](https://account.mapbox.com/access-tokens/)
+
+### 4️⃣ Rode o projeto
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Acesse em:
+👉 [http://localhost:3000](http://localhost:3000)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🗺️ Principais recursos
 
-## Learn More
+* **Mapa 3D com terreno e prédios**
+* **Campo de busca de endereços**
+* **Seleção de ponto via clique**
+* **Input de coordenadas manuais**
+* **Ajuste dinâmico de raio de análise**
+* **Cálculo de risco via IA**
+* **Exibição detalhada de análise técnica**
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 📁 Estrutura de pastas
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+georisk-frontend/
+│
+├── app/                    # Páginas do Next.js
+├── components/             # Componentes reutilizáveis
+│   ├── GeoRiskMap.tsx      # Mapa interativo principal
+│   ├── DemoSection.tsx     # Landing page de teste rápido
+│   └── ui/                 # Componentes Shadcn/UI
+│
+├── lib/                    # Funções auxiliares
+│   └── api.ts              # Conexão com backend
+│
+├── public/                 # Imagens e ícones
+├── styles/                 # Arquivos CSS/Tailwind
+└── .env.local.example      # Exemplo de variáveis de ambiente
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🤝 Integração com o backend
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+O frontend se comunica com o **GeoRisk API** (FastAPI) via endpoints:
+
+| Endpoint        | Método | Função                                                                      |
+| --------------- | ------ | --------------------------------------------------------------------------- |
+| `/geo/risk`     | `POST` | Recebe um polígono (ou ponto com raio) e retorna o nível de risco calculado |
+| `/geo/distance` | `POST` | (opcional) Cálculo direto de distância entre áreas                          |
+| `/ai/ask-ai`    | `POST` | (opcional) Consulta direta à IA de análise contextual                       |
+
+> 🔗 Repositório backend: [georisk-backend](https://github.com/seuusuario/georisk-backend)
+
+---
+
+## 🧩 Melhorias futuras
+
+* [ ] Exibir **heatmap de risco** com gradiente
+* [ ] Adicionar **modo noturno** sincronizado com o mapa
+* [ ] Implementar **cache local de análises**
+* [ ] Exibir histórico de pontos consultados
+* [ ] Exportar relatórios em PDF
+
+---
+
+## 👨‍💻 Autor
+
+Desenvolvido por **Guiler**
+📍 Curitiba – Brasil
+💼 [LinkedIn](https://www.linkedin.com/in/guiserafim)
+
