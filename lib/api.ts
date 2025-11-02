@@ -6,17 +6,21 @@ export type RiskResponse = {
   queda_relativa_m: number | null;
   rio_mais_proximo: string;
   resposta_ia: string;
+  risk_level: "baixo" | "medio" | "alto";
 };
 
 // Envia um Polygon (ou Feature<Polygon>) direto pro /geo/risk
-export async function postRiskPolygon(polygon: Polygon | Feature<Polygon>): Promise<RiskResponse> {
+export async function postRiskPolygon(
+  polygon: Polygon | Feature<Polygon>
+): Promise<RiskResponse> {
   // teu backend aceita geometry OU feature:
   // shape(req.polygon.get("geometry", req.polygon))
   // então pode mandar só geometry para manter simples:
   const body = {
-    polygon: "type" in polygon && (polygon as any).type === "Feature"
-      ? (polygon as Feature<Polygon>).geometry
-      : (polygon as Polygon),
+    polygon:
+      "type" in polygon && (polygon as any).type === "Feature"
+        ? (polygon as Feature<Polygon>).geometry
+        : (polygon as Polygon),
   };
 
   let apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL;
@@ -33,8 +37,10 @@ export async function postRiskPolygon(polygon: Polygon | Feature<Polygon>): Prom
 
   // Permite configurar o endpoint via env, ou usa o padrão /geo/risk
   const endpoint = process.env.NEXT_PUBLIC_API_RISK_ENDPOINT || "/geo/risk";
-  const url = `${apiBaseUrl}${endpoint.startsWith("/") ? endpoint : `/${endpoint}`}`;
-  
+  const url = `${apiBaseUrl}${
+    endpoint.startsWith("/") ? endpoint : `/${endpoint}`
+  }`;
+
   // Debug: log apenas em desenvolvimento
   if (process.env.NODE_ENV === "development") {
     console.log("🔍 Chamando API:", url);
@@ -46,10 +52,12 @@ export async function postRiskPolygon(polygon: Polygon | Feature<Polygon>): Prom
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  
+
   if (!res.ok) {
     const errorText = await res.text().catch(() => "");
-    const errorMessage = `Erro ${res.status} ao chamar ${url}${errorText ? ` - ${errorText}` : ""}`;
+    const errorMessage = `Erro ${res.status} ao chamar ${url}${
+      errorText ? ` - ${errorText}` : ""
+    }`;
     console.error("❌ Erro na API:", errorMessage);
     throw new Error(errorMessage);
   }

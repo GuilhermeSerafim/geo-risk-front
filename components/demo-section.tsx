@@ -8,22 +8,38 @@ import { Input } from "@/components/ui/input";
 import { postRiskByCenterRadius, type RiskResponse } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 
-type RiskLevel = "low" | "medium" | "high" | null;
-
 export default function DemoSection() {
-  const [coordinates, setCoordinates] = useState("-25.43, -49.27"); // lat, lng
-  const [radius, setRadius] = useState(1000); // metros (MVP)
+  const [coordinates, setCoordinates] = useState("-25.43, -49.27");
+  const [radius, setRadius] = useState(1000);
   const [riskData, setRiskData] = useState<RiskResponse | null>(null);
-  const [riskLevel, setRiskLevel] = useState<RiskLevel>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const extractRiskLevel = (text: string): RiskLevel => {
-    const lower = text.toLowerCase();
-    if (lower.includes("baixo")) return "low";
-    if (lower.includes("médio")) return "medium";
-    if (lower.includes("alto")) return "high";
-    return null;
+  // 🔹 traduz o backend (baixo/medio/alto) para cor
+  const getRiskColor = (level: string | undefined) => {
+    switch (level) {
+      case "baixo":
+        return "bg-green-500/20 border-green-500/50 text-green-400";
+      case "medio":
+        return "bg-orange-500/20 border-orange-500/50 text-orange-400";
+      case "alto":
+        return "bg-red-500/20 border-red-500/50 text-red-400";
+      default:
+        return "";
+    }
+  };
+
+  const getRiskLabel = (level: string | undefined) => {
+    switch (level) {
+      case "baixo":
+        return "Baixo Risco";
+      case "medio":
+        return "Risco Médio";
+      case "alto":
+        return "Alto Risco";
+      default:
+        return "";
+    }
   };
 
   const handleAnalyze = async () => {
@@ -38,35 +54,22 @@ export default function DemoSection() {
         throw new Error("Coordenadas inválidas. Use 'lat, lng'.");
       }
 
+      // 🔹 backend já retorna risk_level
       const data = await postRiskByCenterRadius({
         lat,
         lng,
         radiusMeters: radius,
       });
+
       setRiskData(data);
-      setRiskLevel(extractRiskLevel(data.resposta_ia || ""));
     } catch (err) {
       console.error(err);
       setRiskData(null);
-      setRiskLevel(null);
       const errorMessage =
         err instanceof Error ? err.message : "Erro desconhecido";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const getRiskColor = (level: RiskLevel) => {
-    switch (level) {
-      case "low":
-        return "bg-green-500/20 border-green-500/50 text-green-400";
-      case "medium":
-        return "bg-orange-500/20 border-orange-500/50 text-orange-400";
-      case "high":
-        return "bg-red-500/20 border-red-500/50 text-red-400";
-      default:
-        return "";
     }
   };
 
@@ -80,9 +83,7 @@ export default function DemoSection() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Teste o GeoRisk
-          </h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">Teste o GeoRisk</h2>
           <p className="text-lg text-muted-foreground">
             Digite coordenadas e raio para analisar o risco
           </p>
@@ -104,9 +105,7 @@ export default function DemoSection() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-2">
-                  Raio (m)
-                </label>
+                <label className="block text-sm font-medium mb-2">Raio (m)</label>
                 <Input
                   type="number"
                   min={100}
@@ -139,16 +138,17 @@ export default function DemoSection() {
               </motion.div>
             )}
 
+            {/* 🔹 Se existir resposta, renderiza o resultado */}
             {riskData && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`p-4 rounded-lg border-2 ${getRiskColor(riskLevel)}`}
+                className={`p-4 rounded-lg border-2 ${getRiskColor(
+                  riskData.risk_level
+                )}`}
               >
                 <p className="font-semibold text-lg text-center">
-                  {riskLevel === "low" && "Baixo Risco"}
-                  {riskLevel === "medium" && "Risco Médio"}
-                  {riskLevel === "high" && "Alto Risco"}
+                  {getRiskLabel(riskData.risk_level)}
                 </p>
 
                 <div className="text-sm mt-3 space-y-1">
