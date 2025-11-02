@@ -259,7 +259,8 @@ useEffect(() => {
   }
 
   return (
-    <section className="w-full flex flex-col items-center gap-4 mt-6">
+    
+    <section className="w-full flex flex-col items-center gap-4 mt-6" id="teste-section">
       <div className="flex flex-wrap items-center gap-4">
         {/* Campo de raio */}
         <div className="flex items-center gap-2">

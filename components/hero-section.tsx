@@ -1,64 +1,79 @@
-"use client"
+"use client";
 
-import { useEffect, useRef } from "react"
-import { Button } from "@/components/ui/button"
-import { motion } from "framer-motion"
+import { useEffect, useRef } from "react";
+import { Button } from "@/components/ui/button";
+import { motion } from "framer-motion";
 
 export default function HeroSection() {
-  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+
+  // === SCROLL TARGETS ===
+  const handleScrollTo = (id: string) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" });
+    }
+  };
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-    const ctx = canvas.getContext("2d")
-    if (!ctx) return
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-    canvas.width = window.innerWidth
-    canvas.height = window.innerHeight
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
 
-    // Draw animated map-like background
-    ctx.fillStyle = "rgba(15, 30, 50, 0.8)"
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    // Fundo
+    ctx.fillStyle = "rgba(15, 30, 50, 0.8)";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-    // Draw rivers (blue lines)
-    ctx.strokeStyle = "rgba(59, 130, 246, 0.3)"
-    ctx.lineWidth = 3
-    ctx.beginPath()
-    ctx.moveTo(100, 0)
-    ctx.bezierCurveTo(200, 300, 400, 200, 600, 600)
-    ctx.stroke()
+    // Rios
+    ctx.strokeStyle = "rgba(59, 130, 246, 0.3)";
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(100, 0);
+    ctx.bezierCurveTo(200, 300, 400, 200, 600, 600);
+    ctx.stroke();
 
-    ctx.beginPath()
-    ctx.moveTo(canvas.width - 100, 0)
-    ctx.bezierCurveTo(canvas.width - 200, 400, canvas.width - 400, 200, canvas.width - 600, 800)
-    ctx.stroke()
+    ctx.beginPath();
+    ctx.moveTo(canvas.width - 100, 0);
+    ctx.bezierCurveTo(
+      canvas.width - 200,
+      400,
+      canvas.width - 400,
+      200,
+      canvas.width - 600,
+      800
+    );
+    ctx.stroke();
 
-    // Draw risk zones (green/red circles)
-    ctx.fillStyle = "rgba(34, 197, 94, 0.15)"
-    ctx.beginPath()
-    ctx.arc(300, 400, 150, 0, Math.PI * 2)
-    ctx.fill()
+    // Zonas de risco
+    ctx.fillStyle = "rgba(34, 197, 94, 0.15)";
+    ctx.beginPath();
+    ctx.arc(300, 400, 150, 0, Math.PI * 2);
+    ctx.fill();
 
-    ctx.fillStyle = "rgba(239, 68, 68, 0.1)"
-    ctx.beginPath()
-    ctx.arc(canvas.width - 300, 300, 200, 0, Math.PI * 2)
-    ctx.fill()
+    ctx.fillStyle = "rgba(239, 68, 68, 0.1)";
+    ctx.beginPath();
+    ctx.arc(canvas.width - 300, 300, 200, 0, Math.PI * 2);
+    ctx.fill();
 
-    ctx.fillStyle = "rgba(251, 146, 60, 0.12)"
-    ctx.beginPath()
-    ctx.arc(canvas.width / 2, canvas.height - 200, 180, 0, Math.PI * 2)
-    ctx.fill()
+    ctx.fillStyle = "rgba(251, 146, 60, 0.12)";
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height - 200, 180, 0, Math.PI * 2);
+    ctx.fill();
 
-    // Handle window resize
+    // Resize
     const handleResize = () => {
-      canvas.width = window.innerWidth
-      canvas.height = window.innerHeight
-    }
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    };
 
-    window.addEventListener("resize", handleResize)
-    return () => window.removeEventListener("resize", handleResize)
-  }, [])
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <section className="relative h-screen flex items-center justify-center overflow-hidden">
@@ -96,20 +111,28 @@ export default function HeroSection() {
           transition={{ delay: 0.3, duration: 0.8 }}
           className="flex flex-col sm:flex-row gap-4 justify-center"
         >
-          <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8">
+          <Button
+            size="lg"
+            style={{ cursor: "pointer" }}
+            className="bg-primary hover:bg-primary/90 text-primary-foreground rounded-full px-8"
+            onClick={() => handleScrollTo("teste-section")}
+          >
             Testar agora
           </Button>
+
           <Button
             size="lg"
             variant="outline"
+            style={{ cursor: "pointer" }}
             className="border-accent text-accent hover:bg-accent/10 rounded-full px-8 bg-transparent"
+            onClick={() => handleScrollTo("sobre-section")}
           >
             Saiba mais
           </Button>
         </motion.div>
       </motion.div>
 
-      {/* Animated elements */}
+      {/* Scroll indicator */}
       <motion.div
         animate={{ y: [0, 20, 0] }}
         transition={{ duration: 4, repeat: Number.POSITIVE_INFINITY }}
@@ -124,5 +147,5 @@ export default function HeroSection() {
         </div>
       </motion.div>
     </section>
-  )
+  );
 }
