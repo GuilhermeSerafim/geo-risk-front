@@ -4,6 +4,7 @@ import FeaturesSection from "@/components/features-section"
 import DemoSection from "@/components/demo-section"
 import CTASection from "@/components/cta-section"
 import Footer from "@/components/footer"
+import GeoRiskMap from "@/components/ui/GeoRiskMap"
 
 export default function Home() {
   return (
@@ -11,6 +12,7 @@ export default function Home() {
       <HeroSection />
       <FeaturesSection />
       <DemoSection />
+      <GeoRiskMap/>
       <CTASection />
       <Footer />
     </main>
