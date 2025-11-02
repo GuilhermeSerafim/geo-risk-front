@@ -14,9 +14,22 @@ export default function GeoRiskMap() {
     null
   );
   const [riskData, setRiskData] = useState<any>(null);
-  const [radius, setRadius] = useState(1000);
   const [loading, setLoading] = useState(false);
   const [center, setCenter] = useState({ lng: -49.2415, lat: -25.4388 });
+
+  const [radius, setRadius] = useState(1000);
+  const radiusRef = useRef(radius);
+  useEffect(() => {
+    radiusRef.current = radius;
+  }, [radius]);
+
+  const handleMapClick = async (e: mapboxgl.MapMouseEvent) => {
+    const { lng, lat } = e.lngLat;
+    const next = { lng, lat };
+    setCenter(next);
+    setCoords({ lat, lng });
+    await drawAndAnalyze(next, radiusRef.current);
+  };
 
   // inicializa o mapa
   useEffect(() => {
@@ -27,47 +40,28 @@ export default function GeoRiskMap() {
       container: mapContainer.current!,
       style: "mapbox://styles/mapbox/streets-v12",
       center: [center.lng, center.lat],
-      zoom: 15, // põe 15+ pra ver prédios logo de cara
-      pitch: 60, // inclinação da câmera
-      bearing: -20, // rotação
-      antialias: true, // bordas mais suaves em extrusions
+      zoom: 15,
+      pitch: 60,
+      bearing: -20,
+      antialias: true,
     });
 
+    // quando o mapa terminar de carregar
     map.current.on("load", async () => {
-      enable3D(map.current!); // ⬅️ ativa terrain + sky + prédios 3D
-      await drawAndAnalyze(center, radius);
+      enable3D(map.current!);
+      await drawAndAnalyze(center, radiusRef.current);
 
-      map.current!.on("click", async (e) => {
-        const next = { lng: e.lngLat.lng, lat: e.lngLat.lat };
-        setCenter(next);
-        await drawAndAnalyze(next, radius);
-      });
+      // ✅ registra o clique uma única vez, usando radiusRef
+      map.current!.on("click", handleMapClick);
     });
 
-    // adiciona interação de clique
-    map.current.on("click", async (e) => {
-      const { lat, lng } = e.lngLat;
-      setCoords({ lat, lng });
-
-      // desenha o círculo no mapa
-      drawCircle(lng, lat, radius);
-
-      // chama API
-      setLoading(true);
-      try {
-        const data = await postRiskByCenterRadius({
-          lat,
-          lng,
-          radiusMeters: radius,
-        });
-        setRiskData(data);
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    });
-  }, [radius]);
+    // ✅ cleanup — remove o listener ao desmontar
+    return () => {
+      map.current?.off("click", handleMapClick);
+      map.current?.remove();
+      map.current = null;
+    };
+  }, []);
 
   // 🔁 redesenha automaticamente quando o raio mudar
   useEffect(() => {
