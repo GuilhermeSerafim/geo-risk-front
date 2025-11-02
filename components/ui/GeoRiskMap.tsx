@@ -3,6 +3,7 @@ import mapboxgl from "mapbox-gl";
 import * as turf from "@turf/turf";
 import { useEffect, useRef, useState } from "react";
 import { postRiskByCenterRadius } from "@/lib/api";
+import ReactMarkdown from "react-markdown";
 
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_TOKEN!;
 
@@ -315,6 +316,13 @@ export default function GeoRiskMap() {
               {riskData.risk_level.toUpperCase()}
             </span>
           </p>
+          <p className="text-sm leading-relaxed">
+            📊 <strong>Análise técnica:</strong>
+          </p>
+
+          <div className="mt-2 p-3 rounded-md bg-background/40 border border-border text-sm text-foreground/90 whitespace-pre-line">
+            <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
+          </div>
         </div>
       )}
     </section>
