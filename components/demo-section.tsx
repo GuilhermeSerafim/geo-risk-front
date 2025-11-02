@@ -6,6 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { postRiskByCenterRadius, type RiskResponse } from "@/lib/api";
+import ReactMarkdown from "react-markdown";
 
 type RiskLevel = "low" | "medium" | "high" | null;
 
@@ -48,7 +49,8 @@ export default function DemoSection() {
       console.error(err);
       setRiskData(null);
       setRiskLevel(null);
-      const errorMessage = err instanceof Error ? err.message : "Erro desconhecido";
+      const errorMessage =
+        err instanceof Error ? err.message : "Erro desconhecido";
       setError(errorMessage);
     } finally {
       setIsLoading(false);
@@ -164,8 +166,8 @@ export default function DemoSection() {
                   </p>
                 </div>
 
-                <div className="mt-4 p-3 rounded bg-background/40 text-sm whitespace-pre-line">
-                  <strong>🧠 Análise:</strong> {riskData.resposta_ia}
+                <div className="mt-2 leading-relaxed text-foreground/90 markdown-body">
+                  <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
                 </div>
               </motion.div>
             )}
