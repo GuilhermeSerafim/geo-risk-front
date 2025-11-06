@@ -1,9 +1,16 @@
 # 🌍 GeoRisk Frontend
 
-Interface interativa do **GeoRisk**, um sistema de análise geográfica e ambiental com foco em risco de alagamento urbano e declividade do terreno.
 
-![GeoRisk Screenshot](public/img1.png)
-![GeoRisk Screenshot](public/img2.png)
+<div align="center">
+    <a href="https://git.io/typing-svg">
+    <img src="https://readme-typing-svg.demolab.com?font=Raleway&weight=500&size=24&duration=3000&pause=700&color=4CAF50&width=435&lines=An%C3%A1lise+de+risco+em+segundos;Preven%C3%A7%C3%A3o+inteligente+de+enchentes;IA+para+seguran%C3%A7a+ambiental" alt="Typing SVG" />
+  </a>
+  <img src="public/img1.png" alt="GeoRisk Screenshot 1" width="100%" />
+  <img src="public/img2.png" alt="GeoRisk Screenshot 2" width="100%" />
+<h3>Interface interativa do GeoRisk, um sistema de análise geográfica e ambiental com foco em risco de alagamento urbano e declividade do terreno.</h3>
+</div>
+
+
 
 ---
 
@@ -132,4 +139,6 @@ O frontend se comunica com o **GeoRisk API** (FastAPI) via endpoints:
 Desenvolvido por **Guiler**
 📍 Curitiba – Brasil
 💼 [LinkedIn](https://www.linkedin.com/in/guiserafim)
+
+<img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=795548&height=120&section=footer"/>
 
