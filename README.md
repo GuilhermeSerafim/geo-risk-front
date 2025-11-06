@@ -7,7 +7,7 @@
   </a>
   <img src="public/img1.png" alt="GeoRisk Screenshot 1" width="100%" />
   <img src="public/img2.png" alt="GeoRisk Screenshot 2" width="100%" />
-<h3>Interface interativa do GeoRisk, um sistema de análise geográfica e ambiental com foco em risco de alagamento urbano e declividade do terreno.</h3>
+<h3>Interface interativa do GeoRisk, um sistema de análise geográfica e ambiental com foco em risco de alagamento e declividade do terreno.</h3>
 </div>
 
 
