@@ -3,7 +3,7 @@
 
 <div align="center">
     <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=Raleway&weight=500&size=24&duration=3000&pause=700&color=4CAF50&width=435&lines=An%C3%A1lise+de+risco+em+segundos;Preven%C3%A7%C3%A3o+inteligente+de+enchentes;IA+para+seguran%C3%A7a+ambiental" alt="Typing SVG" />
+    <img src="https://readme-typing-svg.demolab.com?font=Raleway&weight=500&size=24&duration=3000&pause=700&color=ffffff&width=435&lines=An%C3%A1lise+de+risco+em+segundos;Preven%C3%A7%C3%A3o+inteligente+de+enchentes;IA+para+seguran%C3%A7a+ambiental" alt="Typing SVG" />
   </a>
   <img src="public/img1.png" alt="GeoRisk Screenshot 1" width="100%" />
   <img src="public/img2.png" alt="GeoRisk Screenshot 2" width="100%" />
