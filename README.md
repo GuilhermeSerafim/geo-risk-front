@@ -115,7 +115,7 @@ O frontend se comunica com o **GeoRisk API** (FastAPI) via endpoints:
 | `/geo/distance` | `POST` | (opcional) Cálculo direto de distância entre áreas                          |
 | `/ai/ask-ai`    | `POST` | (opcional) Consulta direta à IA de análise contextual                       |
 
-> 🔗 Repositório backend: [georisk-backend](https://github.com/seuusuario/georisk-backend)
+> 🔗 Repositório backend: [georisk-backend](https://github.com/GuilhermeSerafim/geo-risk)
 
 ---
 
