@@ -12,7 +12,7 @@ export default function Home() {
       <HeroSection />
       <FeaturesSection />
       <GeoRiskMap/>
-      <CTASection />
+      {/* <CTASection /> */}
       <Footer />
     </main>
   )
