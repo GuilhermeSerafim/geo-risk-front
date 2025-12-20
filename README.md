@@ -1,4 +1,4 @@
-# 🌍 GeoRisk Frontend - [Demo aqui!](https://geo-risk-front.vercel.app/)
+# 🌍 GeoRisk Frontend - [Acesse aqui!](https://geo-risk-front.vercel.app/)
 ![Demonstração do Projeto](public/demo.gif)
 
 <div align="center">
