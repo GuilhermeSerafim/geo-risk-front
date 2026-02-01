@@ -260,8 +260,8 @@ useEffect(() => {
 
   return (
     
-    <section className="w-full flex flex-col items-center gap-4 mt-6" id="teste-section">
-      <div className="flex flex-wrap items-center gap-4">
+    <section className="w-full h-screen flex flex-col" id="teste-section">
+      <div className="flex flex-wrap items-center gap-4 p-4 bg-background/95 backdrop-blur-sm border-b border-border">
         {/* Campo de raio */}
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium">Raio (m):</label>
@@ -274,18 +274,18 @@ useEffect(() => {
             onChange={(e) => setRadius(parseInt(e.target.value || "0", 10))}
           />
         </div>
+        
+        {loading && (
+          <p className="text-sm text-muted-foreground">Analisando...</p>
+        )}
       </div>
 
-      <div className="w-full h-[70vh] rounded-xl overflow-hidden shadow-lg mt-4">
+      <div className="flex-1 relative">
         <div ref={mapContainer} className="w-full h-full" />
       </div>
 
-      {loading && (
-        <p className="text-sm text-muted-foreground">Analisando...</p>
-      )}
-
       {riskData && (
-        <div className="p-4 w-full max-w-xl bg-card/50 border rounded-lg mt-4 text-sm">
+        <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 p-4 bg-card/95 backdrop-blur-sm border rounded-lg shadow-xl text-sm">
           <p>
             🌊 <strong>Rio mais próximo:</strong> {riskData.rio_mais_proximo}
           </p>
@@ -311,11 +311,11 @@ useEffect(() => {
               {riskData.risk_level.toUpperCase()}
             </span>
           </p>
-          <p className="text-sm leading-relaxed">
+          <p className="text-sm leading-relaxed mt-2">
             📊 <strong>Análise técnica:</strong>
           </p>
 
-          <div className="mt-2 p-3 rounded-md bg-background/40 border border-border text-sm text-foreground/90 whitespace-pre-line">
+          <div className="mt-2 p-3 rounded-md bg-background/40 border border-border text-sm text-foreground/90 whitespace-pre-line max-h-48 overflow-y-auto">
             <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
           </div>
         </div>
