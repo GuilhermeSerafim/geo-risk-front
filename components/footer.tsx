@@ -35,17 +35,17 @@ export default function Footer() {
             <h4 className="font-semibold mb-4 text-foreground">Empresa</h4>
             <ul className="space-y-2 text-sm text-muted-foreground">
               <li>
-                <a href="#" className="hover:text-accent transition">
+                <a href="mailto:guilerstudies@gmail.com" className="hover:text-accent transition">
                   Sobre
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-accent transition">
+                <a href="mailto:guilerstudies@gmail.com" className="hover:text-accent transition">
                   Blog
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-accent transition">
+                <a href="mailto:guilerstudies@gmail.com" className="hover:text-accent transition">
                   Contato
                 </a>
               </li>
@@ -60,7 +60,7 @@ export default function Footer() {
                 </a>
               </li>
               <li>
-                <a href="#" className="hover:text-accent transition">
+                <a href="mailto:guilerstudies@gmail.com" className="hover:text-accent transition">
                   Termos
                 </a>
               </li>

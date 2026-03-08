@@ -22,6 +22,7 @@ export default function GeoRiskMap() {
   const [radius, setRadius] = useState(100);
   const radiusRef = useRef(radius);
   const [hasInteracted, setHasInteracted] = useState(false);
+  const [is3DMode, setIs3DMode] = useState(false); // Estado para controlar modo 2D/3D (inicia em 2D)
 
 
   useEffect(() => {
@@ -47,14 +48,14 @@ useEffect(() => {
       style: "mapbox://styles/mapbox/streets-v12",
       center: [center.lng, center.lat],
       zoom: 15,
-      pitch: 60,
-      bearing: -20,
+      pitch: 0,
+      bearing: 0,
       antialias: true,
     });
   
     // quando o mapa terminar de carregar
     map.current.on("load", () => {
-      enable3D(map.current!);
+      // 🗺️ Mapa inicia em modo 2D - use o toggle para ativar 3D
   
       // ✅ registra o clique uma única vez
       map.current!.on("click", handleMapClick);
@@ -187,6 +188,35 @@ useEffect(() => {
     map.easeTo({ pitch: 60, bearing: -20, duration: 1000 });
   }
 
+  // 🔄 Função para alternar entre 2D e 3D
+  const toggle3DMode = () => {
+    if (!map.current) return;
+    
+    const newMode = !is3DMode;
+    setIs3DMode(newMode);
+
+    if (newMode) {
+      // Ativar modo 3D
+      enable3D(map.current);
+    } else {
+      // Desativar modo 3D (melhor performance)
+      map.current.easeTo({ pitch: 0, bearing: 0, duration: 1000 });
+      
+      // Remove terreno 3D
+      map.current.setTerrain(null);
+      
+      // Remove prédios 3D se existir
+      if (map.current.getLayer("3d-buildings")) {
+        map.current.removeLayer("3d-buildings");
+      }
+      
+      // Remove layer sky se existir
+      if (map.current.getLayer("sky")) {
+        map.current.removeLayer("sky");
+      }
+    }
+  };
+
   async function drawAndAnalyze(
     center: { lng: number; lat: number },
     radius: number
@@ -260,8 +290,8 @@ useEffect(() => {
 
   return (
     
-    <section className="w-full flex flex-col items-center gap-4 mt-6" id="teste-section">
-      <div className="flex flex-wrap items-center gap-4">
+    <section className="w-full h-screen flex flex-col" id="teste-section">
+      <div className="flex flex-wrap items-center gap-4 p-4 bg-background/95 backdrop-blur-sm border-b border-border">
         {/* Campo de raio */}
         <div className="flex items-center gap-2">
           <label className="text-sm font-medium">Raio (m):</label>
@@ -274,18 +304,32 @@ useEffect(() => {
             onChange={(e) => setRadius(parseInt(e.target.value || "0", 10))}
           />
         </div>
+
+        {/* Toggle 2D/3D */}
+        <button
+          onClick={toggle3DMode}
+          className={`flex items-center gap-2 px-3 py-1.5 rounded-md font-medium text-sm transition-all duration-300 ${
+            is3DMode
+              ? "bg-blue-500/20 border border-blue-500/50 text-blue-400 hover:bg-blue-500/30"
+              : "bg-gray-500/20 border border-gray-500/50 text-gray-400 hover:bg-gray-500/30"
+          }`}
+          title={is3DMode ? "Alternar para 2D (melhor performance)" : "Alternar para 3D"}
+        >
+          <span className="text-base">{is3DMode ? "🌐" : "🗺️"}</span>
+          <span>{is3DMode ? "Modo 3D" : "Modo 2D"}</span>
+        </button>
+        
+        {loading && (
+          <p className="text-sm text-muted-foreground">Analisando...</p>
+        )}
       </div>
 
-      <div className="w-full h-[70vh] rounded-xl overflow-hidden shadow-lg mt-4">
+      <div className="flex-1 relative">
         <div ref={mapContainer} className="w-full h-full" />
       </div>
 
-      {loading && (
-        <p className="text-sm text-muted-foreground">Analisando...</p>
-      )}
-
       {riskData && (
-        <div className="p-4 w-full max-w-xl bg-card/50 border rounded-lg mt-4 text-sm">
+        <div className="absolute bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-96 p-4 bg-card/95 backdrop-blur-sm border rounded-lg shadow-xl text-sm">
           <p>
             🌊 <strong>Rio mais próximo:</strong> {riskData.rio_mais_proximo}
           </p>
@@ -311,11 +355,11 @@ useEffect(() => {
               {riskData.risk_level.toUpperCase()}
             </span>
           </p>
-          <p className="text-sm leading-relaxed">
+          <p className="text-sm leading-relaxed mt-2">
             📊 <strong>Análise técnica:</strong>
           </p>
 
-          <div className="mt-2 p-3 rounded-md bg-background/40 border border-border text-sm text-foreground/90 whitespace-pre-line">
+          <div className="mt-2 p-3 rounded-md bg-background/40 border border-border text-sm text-foreground/90 whitespace-pre-line max-h-48 overflow-y-auto">
             <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
           </div>
         </div>

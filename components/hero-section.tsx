@@ -104,6 +104,9 @@ export default function HeroSection() {
         >
           Análise inteligente de risco geográfico
         </motion.p>
+        <p className="text-sm text-muted-foreground mb-8">
+          *Disponível apenas para a região de Curitiba.*
+        </p>
 
         <motion.div
           initial={{ opacity: 0 }}

@@ -1,15 +1,18 @@
-# 🌍 GeoRisk Frontend
+# 🌍 GeoRisk Frontend - [Acesse aqui!](https://geo-risk-front.vercel.app/)
+![Demonstração do Projeto](public/demo.gif)
 
-Interface interativa do **GeoRisk**, um sistema de análise geográfica e ambiental com foco em risco de alagamento urbano e declividade do terreno.
+<div align="center">
+    <a href="https://git.io/typing-svg">
+    <img src="https://readme-typing-svg.demolab.com?font=Raleway&weight=500&size=24&duration=3000&pause=700&color=ffffff&width=435&lines=An%C3%A1lise+de+risco+em+segundos;Preven%C3%A7%C3%A3o+inteligente+de+enchentes;IA+para+seguran%C3%A7a+ambiental" alt="Typing SVG" />
+  </a>
+</div>
 
-![GeoRisk Screenshot](public/mapa.png)
+
 
 ---
 
-## 🚀 Sobre o projeto
-
-O **GeoRisk Frontend** foi desenvolvido com **Next.js + React + Mapbox GL JS** para visualização geográfica em tempo real.  
-Ele se conecta à API do GeoRisk (FastAPI backend) para processar dados espaciais e exibir o **nível de risco** de um ponto ou área no mapa.
+## 🚀 Sobre o projeto 
+Interface interativa do GeoRisk, um sistema de análise geográfica e ambiental com foco em risco de alagamento e declividade do terreno. Foi desenvolvido com **Next.js + React + Mapbox GL JS** para visualização geográfica em tempo real. Ele se conecta à API do GeoRisk (FastAPI backend) para processar dados espaciais e exibir o **nível de risco** de um ponto ou área no mapa.
 
 A aplicação é capaz de:
 - Mostrar **mapas 3D** com terreno, prédios e camadas de análise.
@@ -112,7 +115,7 @@ O frontend se comunica com o **GeoRisk API** (FastAPI) via endpoints:
 | `/geo/distance` | `POST` | (opcional) Cálculo direto de distância entre áreas                          |
 | `/ai/ask-ai`    | `POST` | (opcional) Consulta direta à IA de análise contextual                       |
 
-> 🔗 Repositório backend: [georisk-backend](https://github.com/seuusuario/georisk-backend)
+> 🔗 Repositório backend: [georisk-backend](https://github.com/GuilhermeSerafim/geo-risk)
 
 ---
 
@@ -131,4 +134,6 @@ O frontend se comunica com o **GeoRisk API** (FastAPI) via endpoints:
 Desenvolvido por **Guiler**
 📍 Curitiba – Brasil
 💼 [LinkedIn](https://www.linkedin.com/in/guiserafim)
+
+<img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=795548&height=120&section=footer"/>
 
