@@ -20,7 +20,7 @@ const DEFAULT_CENTER = { lng: -49.2415, lat: -25.4388 }
 const DEFAULT_RADIUS = 600
 const MAX_RADIUS = 4000
 const MIN_RADIUS = 100
-const LIGHT_MAP_STYLE = "mapbox://styles/mapbox/light-v11"
+const DAY_MAP_STYLE = "mapbox://styles/mapbox/streets-v12"
 const DARK_MAP_STYLE = "mapbox://styles/mapbox/dark-v11"
 
 if (MAPBOX_TOKEN) {
@@ -101,7 +101,7 @@ function deriveRiskLevel(level: string | undefined, totalScore: number | null): 
 }
 
 function getMapStyle(theme: string | undefined) {
-  return theme === "dark" ? DARK_MAP_STYLE : LIGHT_MAP_STYLE
+  return theme === "dark" ? DARK_MAP_STYLE : DAY_MAP_STYLE
 }
 
 function getRiskDisplay(params: {
@@ -200,7 +200,7 @@ export default function GeoRiskMap() {
   const { resolvedTheme } = useTheme()
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
-  const mapStyleRef = useRef<string>(LIGHT_MAP_STYLE)
+  const mapStyleRef = useRef<string>(DAY_MAP_STYLE)
   const markerRef = useRef<mapboxgl.Marker | null>(null)
   const radiusRef = useRef(DEFAULT_RADIUS)
   const latestRequestRef = useRef(0)
