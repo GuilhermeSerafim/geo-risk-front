@@ -6,43 +6,44 @@
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
 ![Mapbox GL JS](https://img.shields.io/badge/Mapbox_GL_JS-3-4264FB?logo=mapbox&logoColor=white)
 
-Frontend web do **GeoRisk**, com uma landing page institucional em `/` e uma tela de analise interativa em `/analise`. O app permite selecionar uma area no mapa, enviar a geometria para a API e visualizar classificacao de risco, score por componente e laudo tecnico retornado pelo backend.
+GeoRisk's web frontend, with a marketing landing page at `/` and an interactive analysis screen at `/analise`. The app lets users select an area on the map, send the geometry to the API, and view the returned risk classification, component score breakdown, and technical report.
 
 **Demo:** [geo-risk-front.vercel.app](https://geo-risk-front.vercel.app/)
 
-## O que o frontend faz
 
-- Busca endereco, bairro ou coordenada com **Mapbox Geocoder**
-- Seleciona ponto por clique no mapa
-- Gera uma area circular a partir de **centro + raio**
-- Permite ajustar o raio entre **100 m e 4000 m**
-- Alterna entre visualizacao **2D e 3D** com terreno e edifícios
-- Traz presets de teste para **Curitiba, Sao Paulo e Manaus**
-- Exibe **score total**, classificacao de risco e breakdown por topografia, agua e solo
-- Renderiza em Markdown a explicacao tecnica enviada pela API
-- Suporta **tema claro e escuro**
+## What the frontend does
 
-## Stack usada no projeto
+- Search for an address, neighborhood, or coordinates with **Mapbox Geocoder**
+- Select a point by clicking on the map
+- Generate a circular area from **center + radius**
+- Adjust the analysis radius between **100 m and 4000 m**
+- Switch between **2D and 3D** map visualization with terrain and buildings
+- Use test presets for **Curitiba, Sao Paulo, and Manaus**
+- Display **total score**, risk classification, and score breakdown by topography, water, and soil
+- Render the technical explanation returned by the API in Markdown
+- Support **light and dark mode**
 
-| Categoria | Tecnologias |
+## Project stack
+
+| Category | Technologies |
 | --- | --- |
 | Framework | Next.js 16, React 18 |
-| Linguagem | TypeScript 5 |
-| Estilo e UI | Tailwind CSS 4, shadcn/ui, Radix UI |
-| Mapa | Mapbox GL JS, `@mapbox/mapbox-gl-geocoder`, `@turf/turf` |
+| Language | TypeScript 5 |
+| Styling and UI | Tailwind CSS 4, shadcn/ui, Radix UI |
+| Mapping | Mapbox GL JS, `@mapbox/mapbox-gl-geocoder`, `@turf/turf` |
 | UX | `next-themes`, `react-markdown`, `lucide-react` |
-| Observabilidade | `@vercel/analytics` |
+| Observability | `@vercel/analytics` |
 
-## Fluxo de integracao
+## Integration flow
 
-O componente principal de mapa fica em `components/ui/GeoRiskMap.tsx`. Quando o usuario clica no mapa, escolhe um preset ou faz uma busca, o frontend:
+The main map component lives in `components/ui/GeoRiskMap.tsx`. When a user clicks the map, picks a preset, or searches for a location, the frontend:
 
-1. define um centro geográfico;
-2. gera um poligono circular com `@turf/turf`;
-3. envia esse GeoJSON para a API;
-4. renderiza o resultado com score, metricas e laudo.
+1. defines a geographic center;
+2. generates a circular polygon with `@turf/turf`;
+3. sends that GeoJSON to the API;
+4. renders the result with score, metrics, and technical report.
 
-O payload enviado para o backend segue esta ideia:
+The payload sent to the backend follows this shape:
 
 ```json
 {
@@ -53,9 +54,9 @@ O payload enviado para o backend segue esta ideia:
 }
 ```
 
-Por padrao, o frontend chama `POST /geo/risk`.
+By default, the frontend calls `POST /geo/risk`.
 
-## Instalacao
+## Installation
 
 ```bash
 git clone https://github.com/GuilhermeSerafim/geo-risk-front.git
@@ -63,20 +64,20 @@ cd geo-risk-front
 npm install
 ```
 
-## Variaveis de ambiente
+## Environment variables
 
-Crie um arquivo `.env.local` na raiz do projeto. Se preferir, `.env` tambem funciona.
+Create a `.env.local` file in the project root. If you prefer, `.env` also works.
 
-| Variavel | Obrigatoria | Descricao |
+| Variable | Required | Description |
 | --- | --- | --- |
-| `NEXT_PUBLIC_MAPBOX_TOKEN` | Sim | Token publico do Mapbox para renderizar o mapa e a busca |
-| `NEXT_PUBLIC_API_BASE_URL` | Sim | URL base da API GeoRisk, por exemplo `http://localhost:8000` |
-| `NEXT_PUBLIC_API_RISK_ENDPOINT` | Nao | Endpoint de risco. Se nao for definido, o frontend usa `/geo/risk` |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | Yes | Public Mapbox token used to render the map and search |
+| `NEXT_PUBLIC_API_BASE_URL` | Yes | Base URL for the GeoRisk API, for example `http://localhost:8000` |
+| `NEXT_PUBLIC_API_RISK_ENDPOINT` | No | Risk endpoint. If not defined, the frontend uses `/geo/risk` |
 
-Exemplo:
+Example:
 
 ```bash
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.seu_token_mapbox
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_mapbox_token
 NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
 NEXT_PUBLIC_API_RISK_ENDPOINT=/geo/risk
 ```
@@ -90,45 +91,45 @@ npm run start
 npm run lint
 ```
 
-Com o servidor de desenvolvimento ativo, abra [http://localhost:3000](http://localhost:3000).
+With the development server running, open [http://localhost:3000](http://localhost:3000).
 
-## Estrutura principal
+## Main structure
 
 ```text
 geo-risk-front/
 ├── app/
-│   ├── layout.tsx          # Metadata, tema global e analytics
+│   ├── layout.tsx          # Metadata, global theme, and analytics
 │   ├── page.tsx            # Landing page
-│   ├── globals.css         # Estilos globais + Mapbox + Tailwind
+│   ├── globals.css         # Global styles + Mapbox + Tailwind
 │   └── analise/
-│       └── page.tsx        # Tela de analise interativa
+│       └── page.tsx        # Interactive analysis screen
 ├── components/
 │   ├── theme-provider.tsx
 │   ├── theme-toggle.tsx
 │   └── ui/
-│       ├── GeoRiskMap.tsx  # Mapa principal e painel de risco
+│       ├── GeoRiskMap.tsx  # Main map and risk panel
 │       ├── button.tsx
 │       ├── card.tsx
 │       └── input.tsx
 ├── lib/
-│   ├── api.ts              # Cliente da API e geracao do poligono
+│   ├── api.ts              # API client and polygon generation
 │   └── utils.ts
 └── public/
     └── demo.gif
 ```
 
-## Backend esperado
+## Expected backend
 
-O frontend foi preparado para integrar com a **GeoRisk API** em FastAPI. Hoje, a chamada implementada no cliente e usada pela tela de analise eh:
+The frontend is prepared to integrate with the **GeoRisk API** built with FastAPI. At the moment, the client-side call implemented and used by the analysis screen is:
 
-| Endpoint | Metodo | Uso no frontend |
+| Endpoint | Method | Frontend usage |
 | --- | --- | --- |
-| `/geo/risk` | `POST` | Envia um poligono GeoJSON e recebe classificacao, score e laudo |
+| `/geo/risk` | `POST` | Sends a GeoJSON polygon and receives classification, score, and technical report |
 
-Repositório do backend: [GuilhermeSerafim/geo-risk](https://github.com/GuilhermeSerafim/geo-risk)
+Backend repository: [GuilhermeSerafim/geo-risk](https://github.com/GuilhermeSerafim/geo-risk)
 
-## Observacoes
+## Notes
 
-- Sem `NEXT_PUBLIC_MAPBOX_TOKEN`, o mapa nao e inicializado.
-- A precisao da analise depende dos dados e da cobertura configurados no backend.
-- O centro inicial do mapa fica em **Curitiba**, mas o frontend inclui presets para outras cidades.
+- Without `NEXT_PUBLIC_MAPBOX_TOKEN`, the map will not initialize.
+- Analysis accuracy depends on the data and coverage configured in the backend.
+- The map starts centered on **Curitiba**, but the frontend includes presets for other cities.
