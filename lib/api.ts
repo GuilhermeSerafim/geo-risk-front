@@ -3,12 +3,48 @@ import { circle as turfCircle } from "@turf/turf";
 
 export type RiskLevel = "baixo" | "medio" | "alto";
 
+export type RiskCalculation = {
+  confidence?: number;
+  total_score?: number;
+  component_scores?: {
+    topography?: number;
+    water_frequency?: number;
+    soil_permeability?: number;
+  };
+  weights_applied?: {
+    topography?: number;
+    water_frequency?: number;
+    soil_permeability?: number;
+  };
+};
+
+export type EnvironmentalData = {
+  water_frequency?: {
+    years?: number;
+    confidence?: number;
+  };
+};
+
 export type RiskResponse = {
   distancia_rio_m: number;
   queda_relativa_m: number | null;
   rio_mais_proximo: string;
   resposta_ia: string;
-  risk_level: RiskLevel;
+  risk_level: RiskLevel | string;
+  score_total?: number;
+  total_score?: number;
+  risk_score?: number;
+  score?: number;
+  topografia_score?: number;
+  topography_score?: number;
+  agua_score?: number;
+  water_score?: number;
+  solo_score?: number;
+  soil_score?: number;
+  water_frequency_years?: number;
+  risk_model_version?: string;
+  risk_calculation?: RiskCalculation;
+  environmental_data?: EnvironmentalData;
 };
 
 // ---- Type guard seguro: Feature<Polygon> vs Polygon
