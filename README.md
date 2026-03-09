@@ -1,139 +1,134 @@
-# 🌍 GeoRisk Frontend - [Acesse aqui!](https://geo-risk-front.vercel.app/)
-![Demonstração do Projeto](public/demo.gif)
+# GeoRisk Frontend
 
-<div align="center">
-    <a href="https://git.io/typing-svg">
-    <img src="https://readme-typing-svg.demolab.com?font=Raleway&weight=500&size=24&duration=3000&pause=700&color=ffffff&width=435&lines=An%C3%A1lise+de+risco+em+segundos;Preven%C3%A7%C3%A3o+inteligente+de+enchentes;IA+para+seguran%C3%A7a+ambiental" alt="Typing SVG" />
-  </a>
-</div>
+![Next.js](https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react&logoColor=black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-06B6D4?logo=tailwindcss&logoColor=white)
+![Mapbox GL JS](https://img.shields.io/badge/Mapbox_GL_JS-3-4264FB?logo=mapbox&logoColor=white)
 
+Frontend web do **GeoRisk**, com uma landing page institucional em `/` e uma tela de analise interativa em `/analise`. O app permite selecionar uma area no mapa, enviar a geometria para a API e visualizar classificacao de risco, score por componente e laudo tecnico retornado pelo backend.
 
+**Demo:** [geo-risk-front.vercel.app](https://geo-risk-front.vercel.app/)
 
----
+## O que o frontend faz
 
-## 🚀 Sobre o projeto 
-Interface interativa do GeoRisk, um sistema de análise geográfica e ambiental com foco em risco de alagamento e declividade do terreno. Foi desenvolvido com **Next.js + React + Mapbox GL JS** para visualização geográfica em tempo real. Ele se conecta à API do GeoRisk (FastAPI backend) para processar dados espaciais e exibir o **nível de risco** de um ponto ou área no mapa.
+- Busca endereco, bairro ou coordenada com **Mapbox Geocoder**
+- Seleciona ponto por clique no mapa
+- Gera uma area circular a partir de **centro + raio**
+- Permite ajustar o raio entre **100 m e 4000 m**
+- Alterna entre visualizacao **2D e 3D** com terreno e edifícios
+- Traz presets de teste para **Curitiba, Sao Paulo e Manaus**
+- Exibe **score total**, classificacao de risco e breakdown por topografia, agua e solo
+- Renderiza em Markdown a explicacao tecnica enviada pela API
+- Suporta **tema claro e escuro**
 
-A aplicação é capaz de:
-- Mostrar **mapas 3D** com terreno, prédios e camadas de análise.
-- Selecionar pontos manualmente no mapa.
-- Analisar áreas a partir de um **raio configurável** (em metros).
-- Buscar **endereços** via campo de pesquisa (Mapbox Geocoder).
-- Exibir explicações técnicas da IA com base nos dados retornados pela API.
-
----
-
-## 🧠 Stack principal
+## Stack usada no projeto
 
 | Categoria | Tecnologias |
-|------------|--------------|
-| **Framework** | [Next.js 14](https://nextjs.org/) + React 18 |
-| **Mapa** | [Mapbox GL JS](https://docs.mapbox.com/mapbox-gl-js/guides/) + @turf/turf |
-| **Design System** | [Shadcn/UI](https://ui.shadcn.com/) + TailwindCSS |
-| **IA e Dados** | Integração com API GeoRisk (FastAPI) |
-| **Build** | TypeScript + Vite (Turbopack no dev) |
+| --- | --- |
+| Framework | Next.js 16, React 18 |
+| Linguagem | TypeScript 5 |
+| Estilo e UI | Tailwind CSS 4, shadcn/ui, Radix UI |
+| Mapa | Mapbox GL JS, `@mapbox/mapbox-gl-geocoder`, `@turf/turf` |
+| UX | `next-themes`, `react-markdown`, `lucide-react` |
+| Observabilidade | `@vercel/analytics` |
 
----
+## Fluxo de integracao
 
-## ⚙️ Instalação e uso
+O componente principal de mapa fica em `components/ui/GeoRiskMap.tsx`. Quando o usuario clica no mapa, escolhe um preset ou faz uma busca, o frontend:
 
-### 1️⃣ Clone o repositório
+1. define um centro geográfico;
+2. gera um poligono circular com `@turf/turf`;
+3. envia esse GeoJSON para a API;
+4. renderiza o resultado com score, metricas e laudo.
+
+O payload enviado para o backend segue esta ideia:
+
+```json
+{
+  "polygon": {
+    "type": "Polygon",
+    "coordinates": [[[...]]]
+  }
+}
+```
+
+Por padrao, o frontend chama `POST /geo/risk`.
+
+## Instalacao
+
 ```bash
-git clone https://github.com/seuusuario/georisk-frontend.git
-cd georisk-frontend
-````
-
-### 2️⃣ Instale as dependências
-
-```bash
+git clone https://github.com/GuilhermeSerafim/geo-risk-front.git
+cd geo-risk-front
 npm install
 ```
 
-### 3️⃣ Configure o ambiente
+## Variaveis de ambiente
 
-Crie um arquivo `.env.local` na raiz com as seguintes variáveis:
+Crie um arquivo `.env.local` na raiz do projeto. Se preferir, `.env` tambem funciona.
+
+| Variavel | Obrigatoria | Descricao |
+| --- | --- | --- |
+| `NEXT_PUBLIC_MAPBOX_TOKEN` | Sim | Token publico do Mapbox para renderizar o mapa e a busca |
+| `NEXT_PUBLIC_API_BASE_URL` | Sim | URL base da API GeoRisk, por exemplo `http://localhost:8000` |
+| `NEXT_PUBLIC_API_RISK_ENDPOINT` | Nao | Endpoint de risco. Se nao for definido, o frontend usa `/geo/risk` |
+
+Exemplo:
 
 ```bash
-NEXT_PUBLIC_MAPBOX_TOKEN=pk.sua_chave_do_mapbox
-NEXT_PUBLIC_API_BASE_URL=http://127.0.0.1:8000
+NEXT_PUBLIC_MAPBOX_TOKEN=pk.seu_token_mapbox
+NEXT_PUBLIC_API_BASE_URL=http://localhost:8000
+NEXT_PUBLIC_API_RISK_ENDPOINT=/geo/risk
 ```
 
-> 🔑 Para gerar o token do Mapbox:
-> [https://account.mapbox.com/access-tokens/](https://account.mapbox.com/access-tokens/)
-
-### 4️⃣ Rode o projeto
+## Scripts
 
 ```bash
 npm run dev
+npm run build
+npm run start
+npm run lint
 ```
 
-Acesse em:
-👉 [http://localhost:3000](http://localhost:3000)
+Com o servidor de desenvolvimento ativo, abra [http://localhost:3000](http://localhost:3000).
 
----
+## Estrutura principal
 
-## 🗺️ Principais recursos
-
-* **Mapa 3D com terreno e prédios**
-* **Campo de busca de endereços**
-* **Seleção de ponto via clique**
-* **Input de coordenadas manuais**
-* **Ajuste dinâmico de raio de análise**
-* **Cálculo de risco via IA**
-* **Exibição detalhada de análise técnica**
-
----
-
-## 📁 Estrutura de pastas
-
-```
-georisk-frontend/
-│
-├── app/                    # Páginas do Next.js
-├── components/             # Componentes reutilizáveis
-│   ├── GeoRiskMap.tsx      # Mapa interativo principal
-│   ├── DemoSection.tsx     # Landing page de teste rápido
-│   └── ui/                 # Componentes Shadcn/UI
-│
-├── lib/                    # Funções auxiliares
-│   └── api.ts              # Conexão com backend
-│
-├── public/                 # Imagens e ícones
-├── styles/                 # Arquivos CSS/Tailwind
-└── .env.local.example      # Exemplo de variáveis de ambiente
+```text
+geo-risk-front/
+├── app/
+│   ├── layout.tsx          # Metadata, tema global e analytics
+│   ├── page.tsx            # Landing page
+│   ├── globals.css         # Estilos globais + Mapbox + Tailwind
+│   └── analise/
+│       └── page.tsx        # Tela de analise interativa
+├── components/
+│   ├── theme-provider.tsx
+│   ├── theme-toggle.tsx
+│   └── ui/
+│       ├── GeoRiskMap.tsx  # Mapa principal e painel de risco
+│       ├── button.tsx
+│       ├── card.tsx
+│       └── input.tsx
+├── lib/
+│   ├── api.ts              # Cliente da API e geracao do poligono
+│   └── utils.ts
+└── public/
+    └── demo.gif
 ```
 
----
+## Backend esperado
 
-## 🤝 Integração com o backend
+O frontend foi preparado para integrar com a **GeoRisk API** em FastAPI. Hoje, a chamada implementada no cliente e usada pela tela de analise eh:
 
-O frontend se comunica com o **GeoRisk API** (FastAPI) via endpoints:
+| Endpoint | Metodo | Uso no frontend |
+| --- | --- | --- |
+| `/geo/risk` | `POST` | Envia um poligono GeoJSON e recebe classificacao, score e laudo |
 
-| Endpoint        | Método | Função                                                                      |
-| --------------- | ------ | --------------------------------------------------------------------------- |
-| `/geo/risk`     | `POST` | Recebe um polígono (ou ponto com raio) e retorna o nível de risco calculado |
-| `/geo/distance` | `POST` | (opcional) Cálculo direto de distância entre áreas                          |
-| `/ai/ask-ai`    | `POST` | (opcional) Consulta direta à IA de análise contextual                       |
+Repositório do backend: [GuilhermeSerafim/geo-risk](https://github.com/GuilhermeSerafim/geo-risk)
 
-> 🔗 Repositório backend: [georisk-backend](https://github.com/GuilhermeSerafim/geo-risk)
+## Observacoes
 
----
-
-## 🧩 Melhorias futuras
-
-* [ ] Exibir **heatmap de risco** com gradiente
-* [ ] Adicionar **modo noturno** sincronizado com o mapa
-* [ ] Implementar **cache local de análises**
-* [ ] Exibir histórico de pontos consultados
-* [ ] Exportar relatórios em PDF
-
----
-
-## 👨‍💻 Autor
-
-Desenvolvido por **Guiler**
-📍 Curitiba – Brasil
-💼 [LinkedIn](https://www.linkedin.com/in/guiserafim)
-
-<img width=100% src="https://capsule-render.vercel.app/api?type=waving&color=795548&height=120&section=footer"/>
-
+- Sem `NEXT_PUBLIC_MAPBOX_TOKEN`, o mapa nao e inicializado.
+- A precisao da analise depende dos dados e da cobertura configurados no backend.
+- O centro inicial do mapa fica em **Curitiba**, mas o frontend inclui presets para outras cidades.
