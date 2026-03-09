@@ -180,12 +180,20 @@ function pickNumber(...values: Array<number | undefined | null>) {
   return null
 }
 
-function formatScore(score: number | null) {
-  return score === null ? "-" : score.toFixed(2)
+function formatPercent(score: number | null) {
+  if (score === null) return "-"
+  const normalized = score <= 1 ? score * 100 : score
+  return `${Math.round(normalized)}%`
 }
 
 function getTotalScore(data: RiskResponse | null | undefined) {
-  return pickNumber(data?.score_total, data?.total_score, data?.risk_score, data?.score)
+  return pickNumber(
+    data?.score_total,
+    data?.total_score,
+    data?.risk_score,
+    data?.score,
+    data?.risk_calculation?.total_score
+  )
 }
 
 function parseRadius(inputValue: string) {
@@ -215,10 +223,22 @@ export default function GeoRiskMap() {
   const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
 
   const totalScore = getTotalScore(riskData)
-  const normalizedRiskLevel = deriveRiskLevel(riskData?.risk_level as string | undefined, totalScore)
-  const topographyScore = pickNumber(riskData?.topografia_score, riskData?.topography_score)
-  const waterScore = pickNumber(riskData?.agua_score, riskData?.water_score)
-  const soilScore = pickNumber(riskData?.solo_score, riskData?.soil_score)
+  const normalizedRiskLevel = deriveRiskLevel(riskData?.risk_level, totalScore)
+  const topographyScore = pickNumber(
+    riskData?.topografia_score,
+    riskData?.topography_score,
+    riskData?.risk_calculation?.component_scores?.topography
+  )
+  const waterScore = pickNumber(
+    riskData?.agua_score,
+    riskData?.water_score,
+    riskData?.risk_calculation?.component_scores?.water_frequency
+  )
+  const soilScore = pickNumber(
+    riskData?.solo_score,
+    riskData?.soil_score,
+    riskData?.risk_calculation?.component_scores?.soil_permeability
+  )
   const riskDisplay = getRiskDisplay({
     level: normalizedRiskLevel,
     isLoading,
@@ -369,7 +389,7 @@ export default function GeoRiskMap() {
       if (requestId !== latestRequestRef.current) return
 
       setRiskData(data)
-      const dataLevel = deriveRiskLevel(data.risk_level as string | undefined, getTotalScore(data))
+      const dataLevel = deriveRiskLevel(data.risk_level, getTotalScore(data))
       const dataColor = getRiskDisplay({
         level: dataLevel,
         isLoading: false,
@@ -481,7 +501,7 @@ export default function GeoRiskMap() {
     map.setStyle(nextStyle)
 
     map.once("style.load", () => {
-      const level = deriveRiskLevel(riskData?.risk_level as string | undefined, totalScore)
+      const level = deriveRiskLevel(riskData?.risk_level, totalScore)
       const color = getRiskDisplay({
         level,
         isLoading,
@@ -656,15 +676,15 @@ export default function GeoRiskMap() {
             <CardContent className="space-y-2 px-4 text-sm">
               <div className="rounded-md border border-border/70 bg-background/70 p-2">
                 <p className="text-xs text-muted-foreground">Topografia (50%)</p>
-                <p className="font-medium">{formatScore(topographyScore)}</p>
+                <p className="font-medium">{formatPercent(topographyScore)}</p>
               </div>
               <div className="rounded-md border border-border/70 bg-background/70 p-2">
                 <p className="text-xs text-muted-foreground">Agua (30%)</p>
-                <p className="font-medium">{formatScore(waterScore)}</p>
+                <p className="font-medium">{formatPercent(waterScore)}</p>
               </div>
               <div className="rounded-md border border-border/70 bg-background/70 p-2">
                 <p className="text-xs text-muted-foreground">Solo (20%)</p>
-                <p className="font-medium">{formatScore(soilScore)}</p>
+                <p className="font-medium">{formatPercent(soilScore)}</p>
               </div>
             </CardContent>
           </Card>
@@ -684,7 +704,7 @@ export default function GeoRiskMap() {
           >
             {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
             {riskDisplay.label}
-            {totalScore !== null ? ` | score ${totalScore.toFixed(2)}` : ""}
+            {totalScore !== null ? ` | Score ${formatPercent(totalScore)}` : ""}
           </div>
         </div>
 
