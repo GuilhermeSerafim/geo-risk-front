@@ -9,6 +9,18 @@ export type RiskResponse = {
   rio_mais_proximo: string;
   resposta_ia: string;
   risk_level: RiskLevel;
+  score_total?: number;
+  total_score?: number;
+  risk_score?: number;
+  score?: number;
+  topografia_score?: number;
+  topography_score?: number;
+  agua_score?: number;
+  water_score?: number;
+  solo_score?: number;
+  soil_score?: number;
+  water_frequency_years?: number;
+  risk_model_version?: string;
 };
 
 // ---- Type guard seguro: Feature<Polygon> vs Polygon
