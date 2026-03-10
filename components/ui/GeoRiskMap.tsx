@@ -3,7 +3,17 @@
 import mapboxgl from "mapbox-gl"
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
 import * as turf from "@turf/turf"
-import { AlertTriangle, Droplets, Layers, Loader2, Mountain, RotateCcw, Waves } from "lucide-react"
+import {
+  AlertTriangle,
+  Droplets,
+  Layers,
+  Loader2,
+  Mountain,
+  RotateCcw,
+  ShieldAlert,
+  ShieldCheck,
+  Waves,
+} from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
 import ReactMarkdown from "react-markdown"
@@ -22,6 +32,11 @@ const MAX_RADIUS = 4000
 const MIN_RADIUS = 100
 const DAY_MAP_STYLE = "mapbox://styles/mapbox/streets-v12"
 const DARK_MAP_STYLE = "mapbox://styles/mapbox/dark-v11"
+const RISK_FACTOR_WEIGHTS = {
+  topography: 0.5,
+  water: 0.3,
+  soil: 0.2,
+} as const
 
 if (MAPBOX_TOKEN) {
   mapboxgl.accessToken = MAPBOX_TOKEN
@@ -94,9 +109,10 @@ function normalizeRiskLevel(level: string | undefined): RiskLevel | undefined {
 function deriveRiskLevel(level: string | undefined, totalScore: number | null): RiskLevel | undefined {
   const normalizedLevel = normalizeRiskLevel(level)
   if (normalizedLevel) return normalizedLevel
-  if (totalScore === null) return undefined
-  if (totalScore >= 0.7) return "alto"
-  if (totalScore >= 0.4) return "medio"
+  const normalizedScore = normalizeScore(totalScore)
+  if (normalizedScore === null) return undefined
+  if (normalizedScore >= 0.7) return "alto"
+  if (normalizedScore >= 0.4) return "medio"
   return "baixo"
 }
 
@@ -180,19 +196,195 @@ function pickNumber(...values: Array<number | undefined | null>) {
   return null
 }
 
-function formatPercent(score: number | null) {
-  if (score === null) return "-"
-  const normalized = score <= 1 ? score * 100 : score
-  return `${Math.round(normalized)}%`
+function normalizeScore(score: number | null | undefined) {
+  if (typeof score !== "number" || !Number.isFinite(score)) return null
+  const normalized = score <= 1 ? score : score / 100
+  return Math.min(1, Math.max(0, normalized))
+}
+
+function toPercentage(score: number | null | undefined) {
+  const normalized = normalizeScore(score)
+  if (normalized === null) return null
+  return Math.round(normalized * 100)
+}
+
+function formatPercent(score: number | null | undefined) {
+  const percentage = toPercentage(score)
+  if (percentage === null) return "-"
+  return `${percentage}%`
+}
+
+function getRiskWidgetTone(isDarkMode: boolean) {
+  if (isDarkMode) {
+    return {
+      shell:
+        "border-slate-800 bg-[#111827] text-slate-50 shadow-[0_18px_50px_rgba(2,6,23,0.42)]",
+      title: "text-slate-50",
+      description: "text-slate-400",
+      summaryBase: "bg-gradient-to-br from-slate-950 via-slate-900 to-slate-900",
+      eyebrow: "text-slate-400",
+      copy: "text-slate-400",
+      factorBase: "bg-slate-900/80 shadow-[inset_0_1px_0_rgba(148,163,184,0.04)]",
+      factorTitle: "text-slate-100",
+      factorSubtitle: "text-slate-400",
+      impactBadge: "border-slate-700/80 bg-slate-950/80 text-slate-300",
+      progressTrack: "bg-slate-800/90",
+      progressLegend: "text-slate-500",
+      divider: "border-slate-800/80",
+      soilPermeable: "border-emerald-400/20 bg-emerald-400/10 text-emerald-100",
+      soilImpermeable: "border-rose-400/20 bg-rose-400/10 text-rose-100",
+      soilClass: "border-violet-400/20 bg-violet-400/10 text-violet-100",
+    }
+  }
+
+  return {
+    shell:
+      "border-slate-200 bg-[linear-gradient(180deg,rgba(255,255,255,0.98),rgba(248,250,252,0.98))] text-slate-900 shadow-[0_18px_40px_rgba(15,23,42,0.08)]",
+    title: "text-slate-900",
+    description: "text-slate-500",
+    summaryBase: "bg-gradient-to-br from-white via-slate-50 to-slate-100",
+    eyebrow: "text-slate-500",
+    copy: "text-slate-500",
+    factorBase: "bg-white/95 shadow-[0_1px_0_rgba(255,255,255,0.8)_inset]",
+    factorTitle: "text-slate-900",
+    factorSubtitle: "text-slate-500",
+    impactBadge: "border-slate-200 bg-slate-100/90 text-slate-600",
+    progressTrack: "bg-slate-200/90",
+    progressLegend: "text-slate-400",
+    divider: "border-slate-200/80",
+    soilPermeable: "border-emerald-200 bg-emerald-50 text-emerald-700",
+    soilImpermeable: "border-rose-200 bg-rose-50 text-rose-700",
+    soilClass: "border-violet-200 bg-violet-50 text-violet-700",
+  }
+}
+
+function getScoreAppearance(score: number | null | undefined, isDarkMode: boolean) {
+  const percentage = toPercentage(score)
+
+  if (percentage === null) {
+    return isDarkMode
+      ? {
+          label: "Aguardando leitura",
+          text: "text-slate-200",
+          badge: "border-slate-600/80 bg-slate-800/90 text-slate-300",
+          fill: "from-slate-600 to-slate-500",
+          panel: "border-slate-800 bg-slate-900/75",
+          indicator: "border-slate-700/80 bg-slate-900/90 text-slate-300",
+        }
+      : {
+          label: "Aguardando leitura",
+          text: "text-slate-700",
+          badge: "border-slate-300 bg-slate-100 text-slate-700",
+          fill: "from-slate-400 to-slate-500",
+          panel: "border-slate-200 bg-white",
+          indicator: "border-slate-200 bg-slate-50 text-slate-600",
+        }
+  }
+
+  if (percentage <= 30) {
+    return isDarkMode
+      ? {
+          label: "Seguro",
+          text: "text-emerald-300",
+          badge: "border-emerald-400/25 bg-emerald-400/10 text-emerald-100",
+          fill: "from-emerald-500 via-emerald-400 to-emerald-300",
+          panel: "border-emerald-400/15 bg-slate-900/75",
+          indicator: "border-emerald-400/20 bg-emerald-400/10 text-emerald-200",
+        }
+      : {
+          label: "Seguro",
+          text: "text-emerald-700",
+          badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
+          fill: "from-emerald-500 via-teal-400 to-emerald-300",
+          panel: "border-emerald-100 bg-emerald-50/40",
+          indicator: "border-emerald-200 bg-emerald-50 text-emerald-700",
+        }
+  }
+
+  if (percentage <= 60) {
+    return isDarkMode
+      ? {
+          label: "Atencao",
+          text: "text-amber-300",
+          badge: "border-amber-400/25 bg-amber-400/10 text-amber-100",
+          fill: "from-amber-500 via-amber-400 to-amber-300",
+          panel: "border-amber-400/15 bg-slate-900/75",
+          indicator: "border-amber-400/20 bg-amber-400/10 text-amber-200",
+        }
+      : {
+          label: "Atencao",
+          text: "text-amber-700",
+          badge: "border-amber-200 bg-amber-50 text-amber-700",
+          fill: "from-amber-500 via-yellow-400 to-amber-300",
+          panel: "border-amber-100 bg-amber-50/40",
+          indicator: "border-amber-200 bg-amber-50 text-amber-700",
+        }
+  }
+
+  return isDarkMode
+    ? {
+        label: "Critico",
+        text: "text-rose-300",
+        badge: "border-rose-400/25 bg-rose-400/10 text-rose-100",
+        fill: "from-rose-600 via-red-500 to-orange-400",
+        panel: "border-rose-400/15 bg-slate-900/75",
+        indicator: "border-rose-400/20 bg-rose-400/10 text-rose-200",
+      }
+    : {
+        label: "Critico",
+        text: "text-rose-700",
+        badge: "border-rose-200 bg-rose-50 text-rose-700",
+        fill: "from-rose-500 via-red-500 to-orange-400",
+        panel: "border-rose-100 bg-rose-50/40",
+        indicator: "border-rose-200 bg-rose-50 text-rose-700",
+      }
 }
 
 function getTotalScore(data: RiskResponse | null | undefined) {
-  return pickNumber(
-    data?.score_total,
-    data?.total_score,
-    data?.risk_score,
-    data?.score,
-    data?.risk_calculation?.total_score
+  const apiTotal = normalizeScore(
+    pickNumber(
+      data?.score_total,
+      data?.total_score,
+      data?.risk_score,
+      data?.score,
+      data?.risk_calculation?.total_score
+    )
+  )
+
+  if (apiTotal !== null) {
+    return apiTotal
+  }
+
+  const topography = normalizeScore(
+    pickNumber(
+      data?.topografia_score,
+      data?.topography_score,
+      data?.risk_calculation?.component_scores?.topography
+    )
+  )
+  const water = normalizeScore(
+    pickNumber(
+      data?.agua_score,
+      data?.water_score,
+      data?.risk_calculation?.component_scores?.water_frequency
+    )
+  )
+  const soil = normalizeScore(
+    pickNumber(
+      data?.solo_score,
+      data?.soil_score,
+      data?.risk_calculation?.component_scores?.soil_permeability
+    )
+  )
+
+  if (topography === null || water === null || soil === null) {
+    return null
+  }
+
+  return (
+    topography * RISK_FACTOR_WEIGHTS.topography +
+    water * RISK_FACTOR_WEIGHTS.water +
+    soil * RISK_FACTOR_WEIGHTS.soil
   )
 }
 
@@ -206,6 +398,7 @@ function parseRadius(inputValue: string) {
 
 export default function GeoRiskMap() {
   const { resolvedTheme } = useTheme()
+  const isDarkMode = resolvedTheme === "dark"
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const mapStyleRef = useRef<string>(DAY_MAP_STYLE)
@@ -245,6 +438,68 @@ export default function GeoRiskMap() {
     hasSelection,
     hasError: Boolean(error),
   })
+  const soilData = riskData?.environmental_data?.soil
+  const widgetTone = getRiskWidgetTone(isDarkMode)
+  type InsightBadge = {
+    label: string
+    className: string
+    icon?: typeof Droplets
+  }
+
+  const soilBadges: InsightBadge[] = []
+
+  if (typeof soilData?.is_permeable === "boolean") {
+    soilBadges.push({
+      label: soilData.is_permeable ? "Permeavel" : "Impermeavel",
+      className: soilData.is_permeable ? widgetTone.soilPermeable : widgetTone.soilImpermeable,
+      icon: Droplets,
+    })
+  }
+
+  if (soilData?.class_name) {
+    soilBadges.push({
+      label: soilData.class_name,
+      className: widgetTone.soilClass,
+    })
+  }
+
+  const totalScoreAppearance = getScoreAppearance(totalScore, isDarkMode)
+  const totalScorePercentage = toPercentage(totalScore)
+  const SummaryIcon =
+    totalScorePercentage === null ? Layers : totalScorePercentage > 60 ? ShieldAlert : ShieldCheck
+  const riskFactors: Array<{
+    id: string
+    title: string
+    weight: number
+    score: number | null
+    icon: typeof Mountain
+    badges: InsightBadge[]
+  }> = [
+    {
+      id: "topography",
+      title: "Topografia",
+      weight: 50,
+      score: topographyScore,
+      icon: Mountain,
+      badges: [],
+    },
+    {
+      id: "water",
+      title: "Historico de agua",
+      weight: 30,
+      score: waterScore,
+      icon: Waves,
+      badges: [],
+    },
+    {
+      id: "soil",
+      title: "Solo",
+      weight: 20,
+      score: soilScore,
+      icon: Layers,
+      badges: soilBadges,
+    },
+  ]
 
   function clearCircleLayers() {
     const map = mapRef.current
@@ -666,57 +921,163 @@ export default function GeoRiskMap() {
             </CardContent>
           </Card>
 
-          <Card className="gap-3 border-border/70 bg-card/95 py-4 shadow-none">
+          <Card className={cn("gap-4 overflow-hidden py-4", widgetTone.shell)}>
             <CardHeader className="px-4">
-              <CardTitle className="text-base">Motor de risco</CardTitle>
- 
+              <CardTitle className={cn("text-base tracking-tight", widgetTone.title)}>Motor de risco</CardTitle>
+              <CardDescription className={widgetTone.description}>
+                Leitura ponderada de topografia, historico de agua e solo.
+              </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-2 px-4 text-sm">
-              <div className="rounded-md border border-border/70 bg-background/70 p-2">
-                <p className="mb-1 text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Mountain className="h-3.5 w-3.5" />
-                  Topografia (50%)
-                </p>
-                <p className="font-medium">{formatPercent(topographyScore)}</p>
-              </div>
-              <div className="rounded-md border border-border/70 bg-background/70 p-2">
-                <p className="mb-1 text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Waves className="h-3.5 w-3.5" />
-                  Agua (30%)
-                </p>
-                <p className="font-medium">{formatPercent(waterScore)}</p>
-              </div>
-              <div className="rounded-md border border-border/70 bg-background/70 p-2">
-                <p className="mb-1 text-xs text-muted-foreground flex items-center gap-1.5">
-                  <Layers className="h-3.5 w-3.5" />
-                  Solo (20%)
-                </p>
-                <p className="font-medium">{formatPercent(soilScore)}</p>
-              </div>
+            <CardContent className="space-y-4 px-4 text-sm">
+              <div
+                className={cn(
+                  "rounded-[1.25rem] border p-4",
+                  widgetTone.summaryBase,
+                  totalScoreAppearance.panel
+                )}
+              >
+                <div className="flex items-start justify-between gap-4">
+                  <div className="min-w-0">
+                    <p className={cn("text-[11px] font-medium uppercase tracking-[0.24em]", widgetTone.eyebrow)}>
+                      Nota de risco final
+                    </p>
+                    <div className="mt-3 flex flex-wrap items-end gap-3">
+                      <span className={cn("text-4xl font-semibold tracking-tight", totalScoreAppearance.text)}>
+                        {formatPercent(totalScore)}
+                      </span>
+                      <span
+                        className={cn(
+                          "mb-1 inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
+                          totalScoreAppearance.badge
+                        )}
+                      >
+                        {totalScoreAppearance.label}
+                      </span>
+                    </div>
+                    <p className={cn("mt-3 max-w-[28ch] text-xs leading-5", widgetTone.copy)}>
+                      Media ponderada: Topografia 50%, Historico de agua 30% e Solo 20%.
+                    </p>
+                  </div>
 
-              {riskData?.environmental_data?.soil && (
-                <div className="rounded-md border border-border/70 bg-background/70 p-2">
-                  <p className="mb-1.5 text-xs text-muted-foreground flex items-center gap-1">
-                    <Droplets className="h-3 w-3" />
-                    Permeabilidade do solo
-                  </p>
-                  <span
+                  <div
                     className={cn(
-                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
-                      riskData.environmental_data.soil.is_permeable
-                        ? "border border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950/60 dark:text-green-300"
-                        : "border border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950/60 dark:text-red-300"
+                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border",
+                      totalScoreAppearance.indicator,
+                      totalScorePercentage !== null && totalScorePercentage > 60 && "animate-pulse"
                     )}
                   >
-                    {riskData.environmental_data.soil.is_permeable ? "Permeavel" : "Impermeavel"}
-                  </span>
-                  {riskData.environmental_data.soil.class_name && (
-                    <p className="mt-1.5 text-xs text-muted-foreground">
-                      Classe: {riskData.environmental_data.soil.class_name}
-                    </p>
-                  )}
+                    <SummaryIcon className="h-5 w-5" />
+                  </div>
                 </div>
-              )}
+              </div>
+
+              <div className="space-y-3">
+                {riskFactors.map((factor) => {
+                  const appearance = getScoreAppearance(factor.score, isDarkMode)
+                  const Icon = factor.icon
+                  const percentage = toPercentage(factor.score) ?? 0
+
+                  return (
+                    <div
+                      key={factor.id}
+                      className={cn(
+                        "rounded-[1.25rem] border p-4",
+                        widgetTone.factorBase,
+                        appearance.panel
+                      )}
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <div
+                            className={cn(
+                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
+                              appearance.indicator
+                            )}
+                          >
+                            <Icon className="h-4 w-4" />
+                          </div>
+                          <div className="min-w-0">
+                            <p className={cn("font-medium", widgetTone.factorTitle)}>{factor.title}</p>
+                            <p className={cn("mt-0.5 text-xs", widgetTone.factorSubtitle)}>
+                              Leitura atual do fator
+                            </p>
+                          </div>
+                        </div>
+
+                        <span
+                          className={cn(
+                            "inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                            widgetTone.impactBadge
+                          )}
+                        >
+                          Impacto: {factor.weight}%
+                        </span>
+                      </div>
+
+                      <div className="mt-4 flex items-baseline justify-between gap-3">
+                        <span className={cn("text-2xl font-semibold tracking-tight", appearance.text)}>
+                          {formatPercent(factor.score)}
+                        </span>
+                        <span
+                          className={cn(
+                            "inline-flex rounded-full border px-2.5 py-1 text-xs font-medium",
+                            appearance.badge
+                          )}
+                        >
+                          {appearance.label}
+                        </span>
+                      </div>
+
+                      <div className="mt-3">
+                        <div
+                          className={cn("h-2.5 overflow-hidden rounded-full", widgetTone.progressTrack)}
+                          role="progressbar"
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-valuenow={percentage}
+                          aria-label={`${factor.title} em ${percentage}%`}
+                        >
+                          <div
+                            className={cn(
+                              "h-full rounded-full bg-gradient-to-r transition-[width] duration-700 ease-out",
+                              appearance.fill
+                            )}
+                            style={{ width: `${percentage}%` }}
+                          />
+                        </div>
+
+                        <div
+                          className={cn("mt-2 flex items-center justify-between text-[11px]", widgetTone.progressLegend)}
+                        >
+                          <span>0% seguro</span>
+                          <span>100% critico</span>
+                        </div>
+                      </div>
+
+                      {factor.badges.length > 0 && (
+                        <div className={cn("mt-3 flex flex-wrap gap-2 border-t pt-3", widgetTone.divider)}>
+                          {factor.badges.map((badge) => {
+                            const BadgeIcon = badge.icon
+
+                            return (
+                              <span
+                                key={badge.label}
+                                className={cn(
+                                  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+                                  badge.className
+                                )}
+                              >
+                                {BadgeIcon && <BadgeIcon className="h-3 w-3" />}
+                                {badge.label}
+                              </span>
+                            )
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
             </CardContent>
           </Card>
         </div>
