@@ -669,9 +669,7 @@ export default function GeoRiskMap() {
           <Card className="gap-3 border-border/70 bg-card/95 py-4 shadow-none">
             <CardHeader className="px-4">
               <CardTitle className="text-base">Motor de risco</CardTitle>
-              <CardDescription>
-                total = topografia x 0.50 + agua x 0.30 + solo x 0.20
-              </CardDescription>
+ 
             </CardHeader>
             <CardContent className="space-y-2 px-4 text-sm">
               <div className="rounded-md border border-border/70 bg-background/70 p-2">
