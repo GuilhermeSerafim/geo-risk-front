@@ -19,10 +19,17 @@ export type RiskCalculation = {
 };
 
 export type EnvironmentalData = {
+  soil?: {
+    class_id?: number;
+    class_name?: string;
+    is_permeable?: boolean;
+  };
   water_frequency?: {
     years?: number;
     confidence?: number;
   };
+  data_source?: string;
+  provider_status?: string;
 };
 
 export type RiskResponse = {

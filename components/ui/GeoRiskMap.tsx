@@ -3,7 +3,7 @@
 import mapboxgl from "mapbox-gl"
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
 import * as turf from "@turf/turf"
-import { AlertTriangle, Loader2, RotateCcw } from "lucide-react"
+import { AlertTriangle, Droplets, Loader2, RotateCcw } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
 import ReactMarkdown from "react-markdown"
@@ -686,6 +686,30 @@ export default function GeoRiskMap() {
                 <p className="text-xs text-muted-foreground">Solo (20%)</p>
                 <p className="font-medium">{formatPercent(soilScore)}</p>
               </div>
+
+              {riskData?.environmental_data?.soil && (
+                <div className="rounded-md border border-border/70 bg-background/70 p-2">
+                  <p className="mb-1.5 text-xs text-muted-foreground flex items-center gap-1">
+                    <Droplets className="h-3 w-3" />
+                    Permeabilidade do solo
+                  </p>
+                  <span
+                    className={cn(
+                      "inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium",
+                      riskData.environmental_data.soil.is_permeable
+                        ? "border border-green-300 bg-green-50 text-green-700 dark:border-green-700 dark:bg-green-950/60 dark:text-green-300"
+                        : "border border-red-300 bg-red-50 text-red-700 dark:border-red-700 dark:bg-red-950/60 dark:text-red-300"
+                    )}
+                  >
+                    {riskData.environmental_data.soil.is_permeable ? "Permeavel" : "Impermeavel"}
+                  </span>
+                  {riskData.environmental_data.soil.class_name && (
+                    <p className="mt-1.5 text-xs text-muted-foreground">
+                      Classe: {riskData.environmental_data.soil.class_name}
+                    </p>
+                  )}
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -726,6 +750,7 @@ export default function GeoRiskMap() {
               <span className="font-semibold">Queda relativa:</span>{" "}
               {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m.toFixed(2)} m`}
             </p>
+
 
             <div className="markdown-body mt-3 max-h-40 overflow-y-auto rounded-md border border-border/70 bg-background/70 p-3 text-sm leading-relaxed">
               <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
