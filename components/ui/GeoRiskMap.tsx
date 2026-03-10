@@ -3,7 +3,7 @@
 import mapboxgl from "mapbox-gl"
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
 import * as turf from "@turf/turf"
-import { AlertTriangle, Droplets, Loader2, RotateCcw } from "lucide-react"
+import { AlertTriangle, Droplets, Layers, Loader2, Mountain, RotateCcw, Waves } from "lucide-react"
 import { useTheme } from "next-themes"
 import { useEffect, useRef, useState } from "react"
 import ReactMarkdown from "react-markdown"
@@ -675,15 +675,24 @@ export default function GeoRiskMap() {
             </CardHeader>
             <CardContent className="space-y-2 px-4 text-sm">
               <div className="rounded-md border border-border/70 bg-background/70 p-2">
-                <p className="text-xs text-muted-foreground">Topografia (50%)</p>
+                <p className="mb-1 text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Mountain className="h-3.5 w-3.5" />
+                  Topografia (50%)
+                </p>
                 <p className="font-medium">{formatPercent(topographyScore)}</p>
               </div>
               <div className="rounded-md border border-border/70 bg-background/70 p-2">
-                <p className="text-xs text-muted-foreground">Agua (30%)</p>
+                <p className="mb-1 text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Waves className="h-3.5 w-3.5" />
+                  Agua (30%)
+                </p>
                 <p className="font-medium">{formatPercent(waterScore)}</p>
               </div>
               <div className="rounded-md border border-border/70 bg-background/70 p-2">
-                <p className="text-xs text-muted-foreground">Solo (20%)</p>
+                <p className="mb-1 text-xs text-muted-foreground flex items-center gap-1.5">
+                  <Layers className="h-3.5 w-3.5" />
+                  Solo (20%)
+                </p>
                 <p className="font-medium">{formatPercent(soilScore)}</p>
               </div>
 
