@@ -4,7 +4,6 @@ import mapboxgl from "mapbox-gl"
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
 import * as turf from "@turf/turf"
 import {
-  AlertTriangle,
   Droplets,
   Layers,
   Loader2,
@@ -806,38 +805,6 @@ export default function GeoRiskMap() {
                   Reset
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="gap-3 border-border/70 bg-card/95 py-4 shadow-none">
-            <CardHeader className="px-4">
-              <CardTitle className="text-base">Status atual</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3 px-4 text-sm">
-              <p>
-                Centro: <span className="font-medium">{center.lat.toFixed(5)}</span>,{" "}
-                <span className="font-medium">{center.lng.toFixed(5)}</span>
-              </p>
-              <p>
-                Raio: <span className="font-medium">{radius} m</span>
-              </p>
-              {isLoading && (
-                <p className="inline-flex items-center gap-2 rounded-md border border-primary/30 bg-primary/10 px-2 py-1 text-primary">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Analisando area...
-                </p>
-              )}
-              {error && (
-                <p className="inline-flex items-start gap-2 rounded-md border border-red-300 bg-red-50 px-2 py-1 text-red-700 dark:border-red-700 dark:bg-red-950/60 dark:text-red-200">
-                  <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                  {error}
-                </p>
-              )}
-              {!isLoading && !error && !hasSelection && (
-                <p className="text-muted-foreground">
-                  Selecione um ponto para iniciar a analise.
-                </p>
-              )}
             </CardContent>
           </Card>
 
