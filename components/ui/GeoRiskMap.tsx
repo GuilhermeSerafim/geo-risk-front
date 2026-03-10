@@ -44,45 +44,6 @@ if (MAPBOX_TOKEN) {
 
 type MapCenter = { lng: number; lat: number }
 
-type Preset = {
-  id: string
-  title: string
-  center: MapCenter
-  radius: number
-  note: string
-}
-
-const presets: Preset[] = [
-  {
-    id: "curitiba-centro",
-    title: "Curitiba Centro",
-    center: { lat: -25.4284, lng: -49.2733 },
-    radius: 600,
-    note: "Area urbana densa para baseline rapido.",
-  },
-  {
-    id: "vila-olimpia",
-    title: "Vila Olimpia",
-    center: { lat: -23.5951, lng: -46.6862 },
-    radius: 700,
-    note: "Proximidade do Rio Pinheiros.",
-  },
-  {
-    id: "morumbi",
-    title: "Morumbi",
-    center: { lat: -23.6176, lng: -46.7269 },
-    radius: 800,
-    note: "Area com variacao topografica relevante.",
-  },
-  {
-    id: "manaus",
-    title: "Manaus",
-    center: { lat: -3.119, lng: -60.0217 },
-    radius: 900,
-    note: "Ambiente hidrologico de grande bacia.",
-  },
-]
-
 type RiskDisplay = {
   label: string
   color: string
@@ -413,7 +374,6 @@ export default function GeoRiskMap() {
   const [error, setError] = useState<string | null>(null)
   const [hasSelection, setHasSelection] = useState(false)
   const [is3DMode, setIs3DMode] = useState(false)
-  const [selectedPresetId, setSelectedPresetId] = useState<string | null>(null)
 
   const totalScore = getTotalScore(riskData)
   const normalizedRiskLevel = deriveRiskLevel(riskData?.risk_level, totalScore)
@@ -695,7 +655,6 @@ export default function GeoRiskMap() {
     const handleMapClick = (event: mapboxgl.MapMouseEvent) => {
       const nextCenter = { lng: event.lngLat.lng, lat: event.lngLat.lat }
       setCenter(nextCenter)
-      setSelectedPresetId(null)
       setHasSelection(true)
       void drawAndAnalyze(nextCenter, radiusRef.current)
     }
@@ -706,7 +665,6 @@ export default function GeoRiskMap() {
 
       const nextCenter = { lng: resultCenter[0], lat: resultCenter[1] }
       setCenter(nextCenter)
-      setSelectedPresetId(null)
       setHasSelection(true)
       map.flyTo({ center: resultCenter, zoom: 14.5, duration: 900 })
       void drawAndAnalyze(nextCenter, radiusRef.current)
@@ -774,18 +732,6 @@ export default function GeoRiskMap() {
     })
   }, [resolvedTheme, hasSelection, center, radius, is3DMode, riskData, totalScore, isLoading, error])
 
-  function applyPreset(preset: Preset) {
-    const map = mapRef.current
-    if (!map) return
-
-    setSelectedPresetId(preset.id)
-    setCenter(preset.center)
-    setRadius(preset.radius)
-    setHasSelection(true)
-    map.flyTo({ center: [preset.center.lng, preset.center.lat], zoom: 14.5, duration: 850 })
-    void drawAndAnalyze(preset.center, preset.radius)
-  }
-
   function handleRadiusChange(value: string) {
     setRadius(parseRadius(value))
   }
@@ -797,7 +743,6 @@ export default function GeoRiskMap() {
     setRiskData(null)
     setError(null)
     setHasSelection(false)
-    setSelectedPresetId(null)
     setIs3DMode(false)
     latestRequestRef.current += 1
 
@@ -831,7 +776,7 @@ export default function GeoRiskMap() {
             <CardHeader className="px-4">
               <CardTitle className="text-base">Controles da analise</CardTitle>
               <CardDescription>
-                Clique no mapa, use presets ou busque endereco para gerar uma nova leitura.
+                Clique no mapa ou busque endereco para gerar uma nova leitura.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3 px-4 text-sm">
@@ -861,31 +806,6 @@ export default function GeoRiskMap() {
                   Reset
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card className="gap-4 border-border/70 bg-card/95 py-4 shadow-none">
-            <CardHeader className="px-4">
-              <CardTitle className="text-base">Presets de teste</CardTitle>
-              <CardDescription>Cenarios rapidos para comparar leitura hidrologica.</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-2 px-4">
-              {presets.map((preset) => (
-                <button
-                  key={preset.id}
-                  type="button"
-                  onClick={() => applyPreset(preset)}
-                  className={cn(
-                    "w-full rounded-lg border p-3 text-left transition-colors",
-                    selectedPresetId === preset.id
-                      ? "border-primary/60 bg-primary/10"
-                      : "border-border/70 bg-background hover:border-primary/40"
-                  )}
-                >
-                  <p className="text-sm font-medium">{preset.title}</p>
-                  <p className="mt-1 text-xs text-muted-foreground">{preset.note}</p>
-                </button>
-              ))}
             </CardContent>
           </Card>
 
@@ -1102,7 +1022,7 @@ export default function GeoRiskMap() {
 
         {!hasSelection && (
           <div className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-xs rounded-lg border border-border/70 bg-background/90 p-3 text-sm text-muted-foreground shadow-lg">
-            Clique no mapa para calcular o risco ou use um preset para iniciar.
+            Clique no mapa para calcular o risco ou busque um endereco para iniciar.
           </div>
         )}
 
