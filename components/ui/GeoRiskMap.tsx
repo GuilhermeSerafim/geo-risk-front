@@ -811,9 +811,6 @@ export default function GeoRiskMap() {
           <Card className={cn("gap-4 overflow-hidden py-4", widgetTone.shell)}>
             <CardHeader className="px-4">
               <CardTitle className={cn("text-base tracking-tight", widgetTone.title)}>Motor de risco</CardTitle>
-              <CardDescription className={widgetTone.description}>
-                Leitura ponderada de topografia, historico de agua e solo.
-              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4 px-4 text-sm">
               <div
