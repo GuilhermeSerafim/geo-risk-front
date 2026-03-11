@@ -27,11 +27,9 @@ export default function AnalisePage() {
           </div>
           <div className="flex shrink-0 items-center gap-2">
             <ThemeToggle />
-            <Button asChild variant="outline" size="sm" className="px-2 sm:px-3">
-              <Link href="/">
-                <ArrowLeft className="h-4 w-4 sm:mr-2" />
-                <span className="hidden sm:inline">Voltar para landing</span>
-                <span className="sr-only sm:not-sr-only">Voltar</span>
+            <Button asChild variant="outline" size="icon" className="h-9 w-9">
+              <Link href="/" aria-label="Voltar para landing page">
+                <ArrowLeft className="h-4 w-4" />
               </Link>
             </Button>
           </div>
