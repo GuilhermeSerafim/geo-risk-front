@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { type MouseEvent, useState } from "react"
 import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import {
@@ -80,6 +80,15 @@ const viewportOnce = { once: true, margin: "-60px" as const }
 export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
+  const handleSectionNavigation = (event: MouseEvent<HTMLAnchorElement>, sectionId: string) => {
+    event.preventDefault()
+    const section = document.getElementById(sectionId)
+    if (!section) return
+
+    section.scrollIntoView({ behavior: "smooth", block: "start" })
+    setIsMobileMenuOpen(false)
+  }
+
   return (
     <>
       <Landing3DBackground />
@@ -97,13 +106,25 @@ export default function Home() {
               <Logo width={80} height={80} textClassName="text-2xl font-bold tracking-wide" />
             </Link>
             <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-              <a href="#problema" className="hover:text-foreground transition-colors">
+              <a
+                href="#problema"
+                className="hover:text-foreground transition-colors"
+                onClick={(event) => handleSectionNavigation(event, "problema")}
+              >
                 Problema
               </a>
-              <a href="#motor" className="hover:text-foreground transition-colors">
+              <a
+                href="#motor"
+                className="hover:text-foreground transition-colors"
+                onClick={(event) => handleSectionNavigation(event, "motor")}
+              >
                 Motor de risco
               </a>
-              <a href="#stack" className="hover:text-foreground transition-colors">
+              <a
+                href="#stack"
+                className="hover:text-foreground transition-colors"
+                onClick={(event) => handleSectionNavigation(event, "stack")}
+              >
                 Stack tecnico
               </a>
             </nav>
@@ -137,21 +158,21 @@ export default function Home() {
                   <a
                     href="#problema"
                     className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={(event) => handleSectionNavigation(event, "problema")}
                   >
                     Problema
                   </a>
                   <a
                     href="#motor"
                     className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={(event) => handleSectionNavigation(event, "motor")}
                   >
                     Motor de risco
                   </a>
                   <a
                     href="#stack"
                     className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
-                    onClick={() => setIsMobileMenuOpen(false)}
+                    onClick={(event) => handleSectionNavigation(event, "stack")}
                   >
                     Stack tecnico
                   </a>
