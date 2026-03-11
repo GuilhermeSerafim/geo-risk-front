@@ -20,6 +20,7 @@ import ThemeToggle from "@/components/theme-toggle"
 import { Logo } from "@/components/logo"
 import Footer from "@/components/footer"
 import Landing3DBackground from "@/components/landing-3d-background"
+import { GlowingEffect } from "@/components/ui/glowing-effect"
 // import CinematicHeroSection from "@/components/ui/ethereal";
 
 
@@ -220,7 +221,9 @@ export default function Home() {
           animate={{ opacity: 1, x: 0, scale: 1 }}
           transition={{ duration: 0.8, delay: 0.3 }}
         >
-          <Card className="border-border/70 bg-card/85 shadow-xl shadow-primary/10">
+          <Card className="relative border-border/70 bg-card/85 shadow-xl shadow-primary/10">
+            <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} />
+            <div className="relative z-10 w-full h-full flex flex-col">
             <CardHeader>
               <CardTitle>O que muda com GeoRisk</CardTitle>
               <CardDescription>
@@ -243,6 +246,7 @@ export default function Home() {
                 </p>
               </div>
             </CardContent>
+            </div>
           </Card>
         </motion.div>
       </section>
@@ -257,7 +261,9 @@ export default function Home() {
           className="grid gap-6 md:grid-cols-2"
         >
           <motion.div variants={fadeUp} transition={{ duration: 0.6 }}>
-            <Card className="border-border/70 bg-card/85 h-full">
+            <Card className="relative border-border/70 bg-card/85 h-full">
+              <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} />
+              <div className="relative z-10 w-full h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Waves className="h-4 w-4 text-primary" />
@@ -268,10 +274,13 @@ export default function Home() {
                 A analise de risco atual ainda depende de historico defasado e leitura manual.
                 Isso deixa passar rios canalizados, solo impermeavel e mudancas urbanas recentes.
               </CardContent>
+              </div>
             </Card>
           </motion.div>
           <motion.div variants={fadeUp} transition={{ duration: 0.6 }}>
-            <Card className="border-border/70 bg-card/85 h-full">
+            <Card className="relative border-border/70 bg-card/85 h-full">
+              <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} />
+              <div className="relative z-10 w-full h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <MapPinned className="h-4 w-4 text-primary" />
@@ -282,6 +291,7 @@ export default function Home() {
                 O GeoRisk gera uma analise espacial em tempo quase real com logica explicita:
                 calcula risco por fatores tecnicos e entrega um resultado pronto para decisao.
               </CardContent>
+              </div>
             </Card>
           </motion.div>
         </motion.div>
@@ -321,13 +331,16 @@ export default function Home() {
         >
           {pipeline.map((step) => (
             <motion.div key={step.title} variants={fadeUp} transition={{ duration: 0.5 }}>
-              <Card className="border-border/70 bg-card/80 h-full">
+              <Card className="relative border-border/70 bg-card/80 h-full">
+                <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} />
+                <div className="relative z-10 w-full h-full flex flex-col">
                 <CardHeader className="pb-2">
                   <CardTitle className="text-base">{step.title}</CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm text-muted-foreground">
                   {step.description}
                 </CardContent>
+                </div>
               </Card>
             </motion.div>
           ))}
@@ -344,7 +357,9 @@ export default function Home() {
           className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr]"
         >
           <motion.div variants={fadeUp} transition={{ duration: 0.6 }}>
-            <Card className="border-border/70 bg-card/85 h-full">
+            <Card className="relative border-border/70 bg-card/85 h-full">
+              <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} />
+              <div className="relative z-10 w-full h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Layers className="h-4 w-4 text-primary" />
@@ -372,11 +387,14 @@ export default function Home() {
                   </motion.div>
                 ))}
               </CardContent>
+              </div>
             </Card>
           </motion.div>
 
           <motion.div variants={fadeUp} transition={{ duration: 0.6 }}>
-            <Card className="border-border/70 bg-card/85 h-full">
+            <Card className="relative border-border/70 bg-card/85 h-full">
+              <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} />
+              <div className="relative z-10 w-full h-full flex flex-col">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <Building2 className="h-4 w-4 text-primary" />
@@ -397,6 +415,7 @@ export default function Home() {
                   </motion.p>
                 ))}
               </CardContent>
+              </div>
             </Card>
           </motion.div>
         </motion.div>
@@ -410,7 +429,9 @@ export default function Home() {
         transition={{ duration: 0.7 }}
         className="mx-auto mt-14 w-full max-w-6xl px-4"
       >
-        <Card className="border-primary/20 bg-gradient-to-r from-primary/10 via-card to-accent/15 shadow-lg shadow-primary/10">
+        <Card className="relative overflow-hidden border-primary/20 bg-gradient-to-r from-primary/10 via-card to-accent/15 shadow-lg shadow-primary/10">
+          <GlowingEffect spread={40} glow={true} disabled={false} proximity={64} inactiveZone={0.01} />
+          <div className="relative z-10 w-full">
           <CardContent className="flex flex-col items-start justify-between gap-4 py-8 md:flex-row md:items-center">
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-primary">
@@ -427,6 +448,7 @@ export default function Home() {
               </Link>
             </Button>
           </CardContent>
+          </div>
         </Card>
         </motion.section>
       </main>
