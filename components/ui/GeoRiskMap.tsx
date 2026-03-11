@@ -777,16 +777,26 @@ export default function GeoRiskMap() {
 
   const SidebarContent = (
     <div className="space-y-4">
-      <Card className="gap-4 border-border/70 bg-card/95 py-4 shadow-none">
+      <Card
+        className={cn(
+          "gap-4 py-4 shadow-none",
+          isDarkMode ? "border-slate-800 bg-[#111827]" : "border-border/70 bg-card/95"
+        )}
+      >
         <CardHeader className="px-4">
-          <CardTitle className="text-base">Controles da analise</CardTitle>
-          <CardDescription>
+          <CardTitle className={cn("text-base", widgetTone.title)}>Controles da analise</CardTitle>
+          <CardDescription className={widgetTone.description}>
             Clique no mapa ou busque endereco para gerar uma nova leitura.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-3 px-4 text-sm">
           <div>
-            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            <label
+              className={cn(
+                "mb-1.5 block text-xs font-medium uppercase tracking-wide",
+                widgetTone.description
+              )}
+            >
               Raio de analise (m)
             </label>
             <Input
@@ -796,6 +806,7 @@ export default function GeoRiskMap() {
               step={100}
               value={radius}
               onChange={(event) => handleRadiusChange(event.target.value)}
+              className={isDarkMode ? "border-slate-800 bg-slate-900/75 text-slate-50" : undefined}
             />
           </div>
           <div className="grid grid-cols-2 gap-2">
