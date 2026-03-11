@@ -19,6 +19,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import ThemeToggle from "@/components/theme-toggle"
 import { Logo } from "@/components/logo"
 import Footer from "@/components/footer"
+import Landing3DBackground from "@/components/landing-3d-background"
+// import CinematicHeroSection from "@/components/ui/ethereal";
+
 
 const pipeline = [
   {
@@ -78,25 +81,8 @@ export default function Home() {
 
   return (
     <>
-      <main className="relative overflow-hidden pb-20">
-        {/* Animated background blobs */}
-        <div className="pointer-events-none absolute inset-0 -z-10">
-          <motion.div
-            animate={{ x: [0, 20, -10, 0], y: [0, -15, 10, 0], scale: [1, 1.08, 0.96, 1] }}
-            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-300/40 blur-3xl"
-          />
-          <motion.div
-            animate={{ x: [0, -18, 12, 0], y: [0, 20, -8, 0], scale: [1, 0.94, 1.06, 1] }}
-            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute right-0 top-40 h-72 w-72 rounded-full bg-teal-300/50 blur-3xl"
-          />
-          <motion.div
-            animate={{ x: [0, 14, -14, 0], y: [0, -12, 16, 0], scale: [1, 1.05, 0.97, 1] }}
-            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-            className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-sky-200/35 blur-3xl"
-          />
-        </div>
+      <Landing3DBackground />
+      <main className="relative z-10 overflow-hidden pb-20">
 
         {/* Header */}
         <motion.header
