@@ -17,6 +17,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import ThemeToggle from "@/components/theme-toggle"
+import { Logo } from "@/components/logo"
 
 const pipeline = [
   {
@@ -102,13 +103,10 @@ export default function Home() {
         transition={{ duration: 0.5 }}
         className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur"
       >
-        <div className="mx-auto flex h-16 w-full max-w-6xl items-center justify-between px-4">
-          <div className="flex items-center gap-2 text-sm font-semibold tracking-wide">
-            <span className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-primary text-primary-foreground">
-              GR
-            </span>
-            <span>GeoRisk</span>
-          </div>
+        <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4">
+          <Link href="/" className="py-2">
+            <Logo width={80} height={80} textClassName="text-2xl font-bold tracking-wide" />
+          </Link>
           <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
             <a href="#problema" className="hover:text-foreground transition-colors">
               Problema

@@ -1,4 +1,4 @@
-"use client"
+import { Logo } from "./logo"
 
 export default function Footer() {
   return (
@@ -6,7 +6,7 @@ export default function Footer() {
       <div className="max-w-6xl mx-auto px-4 py-12">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           <div>
-            <h3 className="font-bold text-lg mb-4">GeoRisk</h3>
+            <Logo width={48} height={48} textClassName="font-bold text-lg" className="mb-4" />
             <p className="text-muted-foreground text-sm">
               Análise inteligente de risco geográfico para cidades mais seguras
             </p>
