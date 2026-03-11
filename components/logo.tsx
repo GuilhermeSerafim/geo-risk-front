@@ -18,23 +18,22 @@ export function Logo({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <Image
-        src="/logo.png"
+        src="/logo4.png"
         alt="GeoRisk Logo"
-        width={width * 1.6}
-        height={height * 1.6}
+        width={width}
+        height={height}
         className="object-contain dark:hidden"
         priority
       />
       <Image
-        src="/logo2.png"
+        src="/logo3.png"
         alt="GeoRisk Logo (Dark Mode)"
         width={width}
         height={height}
         className="object-contain hidden dark:block"
         priority
       />
-      {showText && <div className="hidden dark:block ml-6"><span className={textClassName}>GeoRisk</span></div>}
-      {showText && <div className="dark:hidden"><span className={textClassName}>GeoRisk</span></div>}
+      {showText && <span className={textClassName}>GeoRisk</span>}
     </div>
   )
 }

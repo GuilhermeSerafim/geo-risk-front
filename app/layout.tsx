@@ -46,9 +46,9 @@ export const metadata: Metadata = {
       "Analise de risco hidrologico com motor auditavel para decisoes urbanas e securitarias.",
   },
   icons: {
-    icon: "/logo2.png",
-    shortcut: "/logo2.png",
-    apple: "/logo2.png",
+    icon: "/logo3.png",
+    shortcut: "/logo3.png",
+    apple: "/logo3.png",
   },
 }
 
