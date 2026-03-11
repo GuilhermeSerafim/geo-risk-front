@@ -18,6 +18,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import ThemeToggle from "@/components/theme-toggle"
 import { Logo } from "@/components/logo"
+import Footer from "@/components/footer"
 
 const pipeline = [
   {
@@ -76,109 +77,110 @@ export default function Home() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
 
   return (
-    <main className="relative overflow-hidden pb-20">
-      {/* Animated background blobs */}
-      <div className="pointer-events-none absolute inset-0 -z-10">
-        <motion.div
-          animate={{ x: [0, 20, -10, 0], y: [0, -15, 10, 0], scale: [1, 1.08, 0.96, 1] }}
-          transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-300/40 blur-3xl"
-        />
-        <motion.div
-          animate={{ x: [0, -18, 12, 0], y: [0, 20, -8, 0], scale: [1, 0.94, 1.06, 1] }}
-          transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute right-0 top-40 h-72 w-72 rounded-full bg-teal-300/50 blur-3xl"
-        />
-        <motion.div
-          animate={{ x: [0, 14, -14, 0], y: [0, -12, 16, 0], scale: [1, 1.05, 0.97, 1] }}
-          transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
-          className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-sky-200/35 blur-3xl"
-        />
-      </div>
-
-      {/* Header */}
-      <motion.header
-        initial={{ opacity: 0, y: -16 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.5 }}
-        className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur"
-      >
-        <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4">
-          <Link href="/" className="py-2">
-            <Logo width={80} height={80} textClassName="text-2xl font-bold tracking-wide" />
-          </Link>
-          <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
-            <a href="#problema" className="hover:text-foreground transition-colors">
-              Problema
-            </a>
-            <a href="#motor" className="hover:text-foreground transition-colors">
-              Motor de risco
-            </a>
-            <a href="#stack" className="hover:text-foreground transition-colors">
-              Stack tecnico
-            </a>
-          </nav>
-          <div className="flex items-center gap-2">
-            <ThemeToggle />
-            <Button asChild size="sm" className="hidden md:flex">
-              <Link href="/analise">Abrir analise</Link>
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="md:hidden"
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            >
-              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-            </Button>
-          </div>
+    <>
+      <main className="relative overflow-hidden pb-20">
+        {/* Animated background blobs */}
+        <div className="pointer-events-none absolute inset-0 -z-10">
+          <motion.div
+            animate={{ x: [0, 20, -10, 0], y: [0, -15, 10, 0], scale: [1, 1.08, 0.96, 1] }}
+            transition={{ duration: 18, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute -left-24 top-0 h-80 w-80 rounded-full bg-cyan-300/40 blur-3xl"
+          />
+          <motion.div
+            animate={{ x: [0, -18, 12, 0], y: [0, 20, -8, 0], scale: [1, 0.94, 1.06, 1] }}
+            transition={{ duration: 22, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute right-0 top-40 h-72 w-72 rounded-full bg-teal-300/50 blur-3xl"
+          />
+          <motion.div
+            animate={{ x: [0, 14, -14, 0], y: [0, -12, 16, 0], scale: [1, 1.05, 0.97, 1] }}
+            transition={{ duration: 20, repeat: Infinity, ease: "easeInOut" }}
+            className="absolute bottom-0 left-1/3 h-96 w-96 rounded-full bg-sky-200/35 blur-3xl"
+          />
         </div>
 
-        {/* Mobile Menu */}
-        <AnimatePresence>
-          {isMobileMenuOpen && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              transition={{ duration: 0.2 }}
-              className="border-t border-border/70 bg-background/95 backdrop-blur md:hidden"
-            >
-              <nav className="flex flex-col gap-4 p-4 text-sm text-muted-foreground">
-                <a
-                  href="#problema"
-                  className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Problema
-                </a>
-                <a
-                  href="#motor"
-                  className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Motor de risco
-                </a>
-                <a
-                  href="#stack"
-                  className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
-                  onClick={() => setIsMobileMenuOpen(false)}
-                >
-                  Stack tecnico
-                </a>
-                <Button asChild className="mt-2 w-full justify-center">
-                  <Link href="/analise" onClick={() => setIsMobileMenuOpen(false)}>
-                    Abrir analise
-                  </Link>
-                </Button>
-              </nav>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.header>
+        {/* Header */}
+        <motion.header
+          initial={{ opacity: 0, y: -16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="sticky top-0 z-40 border-b border-border/70 bg-background/85 backdrop-blur"
+        >
+          <div className="mx-auto flex h-20 w-full max-w-6xl items-center justify-between px-4">
+            <Link href="/" className="py-2">
+              <Logo width={80} height={80} textClassName="text-2xl font-bold tracking-wide" />
+            </Link>
+            <nav className="hidden items-center gap-6 text-sm text-muted-foreground md:flex">
+              <a href="#problema" className="hover:text-foreground transition-colors">
+                Problema
+              </a>
+              <a href="#motor" className="hover:text-foreground transition-colors">
+                Motor de risco
+              </a>
+              <a href="#stack" className="hover:text-foreground transition-colors">
+                Stack tecnico
+              </a>
+            </nav>
+            <div className="flex items-center gap-2">
+              <ThemeToggle />
+              <Button asChild size="sm" className="hidden md:flex">
+                <Link href="/analise">Abrir analise</Link>
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="md:hidden"
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              >
+                {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+              </Button>
+            </div>
+          </div>
 
-      {/* Hero */}
-      <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-20 pt-16 md:grid-cols-[1.2fr_0.8fr] md:pt-24">
+          {/* Mobile Menu */}
+          <AnimatePresence>
+            {isMobileMenuOpen && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: "auto" }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.2 }}
+                className="border-t border-border/70 bg-background/95 backdrop-blur md:hidden"
+              >
+                <nav className="flex flex-col gap-4 p-4 text-sm text-muted-foreground">
+                  <a
+                    href="#problema"
+                    className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Problema
+                  </a>
+                  <a
+                    href="#motor"
+                    className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Motor de risco
+                  </a>
+                  <a
+                    href="#stack"
+                    className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                  >
+                    Stack tecnico
+                  </a>
+                  <Button asChild className="mt-2 w-full justify-center">
+                    <Link href="/analise" onClick={() => setIsMobileMenuOpen(false)}>
+                      Abrir analise
+                    </Link>
+                  </Button>
+                </nav>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </motion.header>
+
+        {/* Hero */}
+        <section className="mx-auto grid w-full max-w-6xl gap-8 px-4 pb-20 pt-16 md:grid-cols-[1.2fr_0.8fr] md:pt-24">
         <motion.div
           initial="hidden"
           animate="visible"
@@ -440,7 +442,9 @@ export default function Home() {
             </Button>
           </CardContent>
         </Card>
-      </motion.section>
-    </main>
+        </motion.section>
+      </main>
+      <Footer />
+    </>
   )
 }
