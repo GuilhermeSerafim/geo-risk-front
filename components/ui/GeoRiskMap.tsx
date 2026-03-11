@@ -23,6 +23,14 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
+import {
+  Drawer,
+  DrawerContent,
+  DrawerDescription,
+  DrawerHeader,
+  DrawerTitle,
+  DrawerTrigger,
+} from "@/components/ui/drawer"
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
 const DEFAULT_CENTER = { lng: -49.2415, lat: -25.4388 }
@@ -767,207 +775,231 @@ export default function GeoRiskMap() {
     }
   }
 
-  return (
-    <section className="grid h-full overflow-hidden rounded-2xl border border-border/80 bg-card/85 shadow-2xl shadow-primary/10 lg:grid-cols-[360px_1fr] lg:grid-rows-1">
-      <aside className="overflow-y-auto border-b border-border/70 bg-background/90 p-4 lg:border-b-0 lg:border-r">
-        <div className="space-y-4">
-          <Card className="gap-4 border-border/70 bg-card/95 py-4 shadow-none">
-            <CardHeader className="px-4">
-              <CardTitle className="text-base">Controles da analise</CardTitle>
-              <CardDescription>
-                Clique no mapa ou busque endereco para gerar uma nova leitura.
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3 px-4 text-sm">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                  Raio de analise (m)
-                </label>
-                <Input
-                  type="number"
-                  min={MIN_RADIUS}
-                  max={MAX_RADIUS}
-                  step={100}
-                  value={radius}
-                  onChange={(event) => handleRadiusChange(event.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <Button
-                  variant={is3DMode ? "default" : "outline"}
-                  onClick={toggle3D}
-                  className="w-full"
-                >
-                  {is3DMode ? "Desativar 3D" : "Ativar 3D"}
-                </Button>
-                <Button variant="outline" onClick={handleReset} className="w-full">
-                  <RotateCcw className="h-4 w-4" />
-                  Reset
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+  const SidebarContent = (
+    <div className="space-y-4">
+      <Card className="gap-4 border-border/70 bg-card/95 py-4 shadow-none">
+        <CardHeader className="px-4">
+          <CardTitle className="text-base">Controles da analise</CardTitle>
+          <CardDescription>
+            Clique no mapa ou busque endereco para gerar uma nova leitura.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3 px-4 text-sm">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Raio de analise (m)
+            </label>
+            <Input
+              type="number"
+              min={MIN_RADIUS}
+              max={MAX_RADIUS}
+              step={100}
+              value={radius}
+              onChange={(event) => handleRadiusChange(event.target.value)}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <Button
+              variant={is3DMode ? "default" : "outline"}
+              onClick={toggle3D}
+              className="w-full min-h-[44px]"
+            >
+              {is3DMode ? "Desativar 3D" : "Ativar 3D"}
+            </Button>
+            <Button variant="outline" onClick={handleReset} className="w-full min-h-[44px]">
+              <RotateCcw className="h-4 w-4" />
+              Reset
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
 
-          <Card className={cn("gap-4 overflow-hidden py-4", widgetTone.shell)}>
-            <CardHeader className="px-4">
-              <CardTitle className={cn("text-base tracking-tight", widgetTone.title)}>Motor de risco</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 px-4 text-sm">
-              <div
-                className={cn(
-                  "rounded-[1.25rem] border p-4",
-                  widgetTone.summaryBase,
-                  totalScoreAppearance.panel
-                )}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="min-w-0">
-                    <p className={cn("text-[11px] font-medium uppercase tracking-[0.24em]", widgetTone.eyebrow)}>
-                      Nota de risco final
-                    </p>
-                    <div className="mt-3 flex flex-wrap items-end gap-3">
-                      <span className={cn("text-4xl font-semibold tracking-tight", totalScoreAppearance.text)}>
-                        {formatPercent(totalScore)}
-                      </span>
-                      <span
-                        className={cn(
-                          "mb-1 inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
-                          totalScoreAppearance.badge
-                        )}
-                      >
-                        {totalScoreAppearance.label}
-                      </span>
-                    </div>
-                    <p className={cn("mt-3 max-w-[28ch] text-xs leading-5", widgetTone.copy)}>
-                      Media ponderada: Topografia 50%, Historico de agua 30% e Solo 20%.
-                    </p>
-                  </div>
-
-                  <div
+      <Card className={cn("gap-4 overflow-hidden py-4", widgetTone.shell)}>
+        <CardHeader className="px-4">
+          <CardTitle className={cn("text-base tracking-tight", widgetTone.title)}>Motor de risco</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4 px-4 text-sm">
+          <div
+            className={cn(
+              "rounded-[1.25rem] border p-4",
+              widgetTone.summaryBase,
+              totalScoreAppearance.panel
+            )}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div className="min-w-0">
+                <p className={cn("text-[11px] font-medium uppercase tracking-[0.24em]", widgetTone.eyebrow)}>
+                  Nota de risco final
+                </p>
+                <div className="mt-3 flex flex-wrap items-end gap-3">
+                  <span className={cn("text-4xl font-semibold tracking-tight", totalScoreAppearance.text)}>
+                    {formatPercent(totalScore)}
+                  </span>
+                  <span
                     className={cn(
-                      "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border",
-                      totalScoreAppearance.indicator,
-                      totalScorePercentage !== null && totalScorePercentage > 60 && "animate-pulse"
+                      "mb-1 inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
+                      totalScoreAppearance.badge
                     )}
                   >
-                    <SummaryIcon className="h-5 w-5" />
-                  </div>
+                    {totalScoreAppearance.label}
+                  </span>
                 </div>
+                <p className={cn("mt-3 max-w-[28ch] text-xs leading-5", widgetTone.copy)}>
+                  Media ponderada: Topografia 50%, Historico de agua 30% e Solo 20%.
+                </p>
               </div>
 
-              <div className="space-y-3">
-                {riskFactors.map((factor) => {
-                  const appearance = getScoreAppearance(factor.score, isDarkMode)
-                  const Icon = factor.icon
-                  const percentage = toPercentage(factor.score) ?? 0
+              <div
+                className={cn(
+                  "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border",
+                  totalScoreAppearance.indicator,
+                  totalScorePercentage !== null && totalScorePercentage > 60 && "animate-pulse"
+                )}
+              >
+                <SummaryIcon className="h-5 w-5" />
+              </div>
+            </div>
+          </div>
 
-                  return (
-                    <div
-                      key={factor.id}
+          <div className="space-y-3">
+            {riskFactors.map((factor) => {
+              const appearance = getScoreAppearance(factor.score, isDarkMode)
+              const Icon = factor.icon
+              const percentage = toPercentage(factor.score) ?? 0
+
+              return (
+                <div
+                  key={factor.id}
+                  className={cn(
+                    "rounded-[1.25rem] border p-4",
+                    widgetTone.factorBase,
+                    appearance.panel
+                  )}
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div
+                        className={cn(
+                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
+                          appearance.indicator
+                        )}
+                      >
+                        <Icon className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className={cn("font-medium", widgetTone.factorTitle)}>{factor.title}</p>
+                        <p className={cn("mt-0.5 text-xs", widgetTone.factorSubtitle)}>
+                          Leitura atual do fator
+                        </p>
+                      </div>
+                    </div>
+
+                    <span
                       className={cn(
-                        "rounded-[1.25rem] border p-4",
-                        widgetTone.factorBase,
-                        appearance.panel
+                        "inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                        widgetTone.impactBadge
                       )}
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex min-w-0 items-center gap-3">
-                          <div
+                      Impacto: {factor.weight}%
+                    </span>
+                  </div>
+
+                  <div className="mt-4 flex items-baseline justify-between gap-3">
+                    <span className={cn("text-2xl font-semibold tracking-tight", appearance.text)}>
+                      {formatPercent(factor.score)}
+                    </span>
+                    <span
+                      className={cn(
+                        "inline-flex rounded-full border px-2.5 py-1 text-xs font-medium",
+                        appearance.badge
+                      )}
+                    >
+                      {appearance.label}
+                    </span>
+                  </div>
+
+                  <div className="mt-3">
+                    <div
+                      className={cn("h-2.5 overflow-hidden rounded-full", widgetTone.progressTrack)}
+                      role="progressbar"
+                      aria-valuemin={0}
+                      aria-valuemax={100}
+                      aria-valuenow={percentage}
+                      aria-label={`${factor.title} em ${percentage}%`}
+                    >
+                      <div
+                        className={cn(
+                          "h-full rounded-full bg-gradient-to-r transition-[width] duration-700 ease-out",
+                          appearance.fill
+                        )}
+                        style={{ width: `${percentage}%` }}
+                      />
+                    </div>
+
+                    <div
+                      className={cn("mt-2 flex items-center justify-between text-[11px]", widgetTone.progressLegend)}
+                    >
+                      <span>0% seguro</span>
+                      <span>100% critico</span>
+                    </div>
+                  </div>
+
+                  {factor.badges.length > 0 && (
+                    <div className={cn("mt-3 flex flex-wrap gap-2 border-t pt-3", widgetTone.divider)}>
+                      {factor.badges.map((badge) => {
+                        const BadgeIcon = badge.icon
+
+                        return (
+                          <span
+                            key={badge.label}
                             className={cn(
-                              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border",
-                              appearance.indicator
+                              "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
+                              badge.className
                             )}
                           >
-                            <Icon className="h-4 w-4" />
-                          </div>
-                          <div className="min-w-0">
-                            <p className={cn("font-medium", widgetTone.factorTitle)}>{factor.title}</p>
-                            <p className={cn("mt-0.5 text-xs", widgetTone.factorSubtitle)}>
-                              Leitura atual do fator
-                            </p>
-                          </div>
-                        </div>
-
-                        <span
-                          className={cn(
-                            "inline-flex shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-medium",
-                            widgetTone.impactBadge
-                          )}
-                        >
-                          Impacto: {factor.weight}%
-                        </span>
-                      </div>
-
-                      <div className="mt-4 flex items-baseline justify-between gap-3">
-                        <span className={cn("text-2xl font-semibold tracking-tight", appearance.text)}>
-                          {formatPercent(factor.score)}
-                        </span>
-                        <span
-                          className={cn(
-                            "inline-flex rounded-full border px-2.5 py-1 text-xs font-medium",
-                            appearance.badge
-                          )}
-                        >
-                          {appearance.label}
-                        </span>
-                      </div>
-
-                      <div className="mt-3">
-                        <div
-                          className={cn("h-2.5 overflow-hidden rounded-full", widgetTone.progressTrack)}
-                          role="progressbar"
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-valuenow={percentage}
-                          aria-label={`${factor.title} em ${percentage}%`}
-                        >
-                          <div
-                            className={cn(
-                              "h-full rounded-full bg-gradient-to-r transition-[width] duration-700 ease-out",
-                              appearance.fill
-                            )}
-                            style={{ width: `${percentage}%` }}
-                          />
-                        </div>
-
-                        <div
-                          className={cn("mt-2 flex items-center justify-between text-[11px]", widgetTone.progressLegend)}
-                        >
-                          <span>0% seguro</span>
-                          <span>100% critico</span>
-                        </div>
-                      </div>
-
-                      {factor.badges.length > 0 && (
-                        <div className={cn("mt-3 flex flex-wrap gap-2 border-t pt-3", widgetTone.divider)}>
-                          {factor.badges.map((badge) => {
-                            const BadgeIcon = badge.icon
-
-                            return (
-                              <span
-                                key={badge.label}
-                                className={cn(
-                                  "inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-medium",
-                                  badge.className
-                                )}
-                              >
-                                {BadgeIcon && <BadgeIcon className="h-3 w-3" />}
-                                {badge.label}
-                              </span>
-                            )
-                          })}
-                        </div>
-                      )}
+                            {BadgeIcon && <BadgeIcon className="h-3 w-3" />}
+                            {badge.label}
+                          </span>
+                        )
+                      })}
                     </div>
-                  )
-                })}
-              </div>
-            </CardContent>
-          </Card>
+                  )}
+                </div>
+              )
+            })}
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Mobile inline results below controls in drawer */}
+      {riskData && (
+        <div className="rounded-lg border border-border/80 bg-card/95 p-4 text-sm shadow-sm md:hidden mt-4">
+          <p className="text-sm">
+            <span className="font-semibold">Rio mais proximo:</span> {riskData.rio_mais_proximo}
+          </p>
+          <p className="mt-1 text-sm">
+            <span className="font-semibold">Distancia:</span> {riskData.distancia_rio_m.toFixed(1)} m
+          </p>
+          <p className="mt-1 text-sm">
+            <span className="font-semibold">Queda relativa:</span>{" "}
+            {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m.toFixed(2)} m`}
+          </p>
+
+          <div className="markdown-body mt-3 max-h-40 overflow-y-auto rounded-md border border-border/70 bg-background/70 p-3 text-sm leading-relaxed">
+            <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
+          </div>
         </div>
+      )}
+    </div>
+  )
+
+  return (
+    <section className="grid h-full overflow-hidden rounded-2xl border border-border/80 bg-card/85 shadow-2xl shadow-primary/10 lg:grid-cols-[360px_1fr] lg:grid-rows-1">
+      <aside className="hidden overflow-y-auto border-r border-border/70 bg-background/90 p-4 lg:block">
+        {SidebarContent}
       </aside>
 
-      <div className="relative min-h-[360px] overflow-hidden lg:min-h-0">
+      <div className="relative min-h-[360px] flex-1 overflow-hidden lg:min-h-0">
         <div ref={mapContainerRef} className="h-full w-full" />
 
         <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-end">
@@ -984,14 +1016,35 @@ export default function GeoRiskMap() {
           </div>
         </div>
 
+        {/* MOBILE DRAWER TRIGGER */}
+        <div className="absolute bottom-6 left-1/2 z-30 -translate-x-1/2 lg:hidden">
+          <Drawer>
+            <DrawerTrigger asChild>
+              <Button size="lg" className="rounded-full px-6 shadow-xl min-h-[48px]">
+                <Layers className="mr-2 h-4 w-4" />
+                Painel da Analise
+              </Button>
+            </DrawerTrigger>
+            <DrawerContent className="max-h-[85vh]">
+              <DrawerHeader className="text-left pb-2">
+                <DrawerTitle>Controles e Motor de Risco</DrawerTitle>
+                <DrawerDescription>Deslize para ver os detalhes da leitura.</DrawerDescription>
+              </DrawerHeader>
+              <div className="overflow-y-auto p-4 pt-0">
+                {SidebarContent}
+              </div>
+            </DrawerContent>
+          </Drawer>
+        </div>
+
         {!hasSelection && (
-          <div className="pointer-events-none absolute bottom-3 left-3 z-20 max-w-xs rounded-lg border border-border/70 bg-background/90 p-3 text-sm text-muted-foreground shadow-lg">
+          <div className="pointer-events-none hidden lg:block absolute bottom-3 left-3 z-20 max-w-xs rounded-lg border border-border/70 bg-background/90 p-3 text-sm text-muted-foreground shadow-lg lg:bottom-4 lg:left-4">
             Clique no mapa para calcular o risco ou busque um endereco para iniciar.
           </div>
         )}
 
         {riskData && (
-          <div className="absolute bottom-3 right-3 z-20 w-[calc(100%-1.5rem)] max-w-md rounded-lg border border-border/80 bg-card/95 p-4 text-sm shadow-xl">
+          <div className="hidden md:block absolute bottom-3 right-3 z-20 w-[calc(100%-1.5rem)] max-w-md rounded-lg border border-border/80 bg-card/95 p-4 text-sm shadow-xl lg:bottom-4 lg:right-4">
             <p className="text-sm">
               <span className="font-semibold">Rio mais proximo:</span> {riskData.rio_mais_proximo}
             </p>
@@ -1002,7 +1055,6 @@ export default function GeoRiskMap() {
               <span className="font-semibold">Queda relativa:</span>{" "}
               {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m.toFixed(2)} m`}
             </p>
-
 
             <div className="markdown-body mt-3 max-h-40 overflow-y-auto rounded-md border border-border/70 bg-background/70 p-3 text-sm leading-relaxed">
               <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>

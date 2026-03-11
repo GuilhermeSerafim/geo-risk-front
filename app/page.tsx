@@ -1,7 +1,8 @@
 "use client"
 
+import { useState } from "react"
 import Link from "next/link"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import {
   ArrowRight,
   Building2,
@@ -9,6 +10,8 @@ import {
   MapPinned,
   ShieldAlert,
   Waves,
+  Menu,
+  X,
 } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
@@ -69,6 +72,8 @@ const staggerContainer = {
 const viewportOnce = { once: true, margin: "-60px" as const }
 
 export default function Home() {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+
   return (
     <main className="relative overflow-hidden pb-20">
       {/* Animated background blobs */}
@@ -117,11 +122,61 @@ export default function Home() {
           </nav>
           <div className="flex items-center gap-2">
             <ThemeToggle />
-            <Button asChild size="sm">
+            <Button asChild size="sm" className="hidden md:flex">
               <Link href="/analise">Abrir analise</Link>
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+            >
+              {isMobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </Button>
           </div>
         </div>
+
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isMobileMenuOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.2 }}
+              className="border-t border-border/70 bg-background/95 backdrop-blur md:hidden"
+            >
+              <nav className="flex flex-col gap-4 p-4 text-sm text-muted-foreground">
+                <a
+                  href="#problema"
+                  className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Problema
+                </a>
+                <a
+                  href="#motor"
+                  className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Motor de risco
+                </a>
+                <a
+                  href="#stack"
+                  className="block w-full rounded-md px-2 py-2 hover:bg-accent/50 hover:text-foreground"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
+                  Stack tecnico
+                </a>
+                <Button asChild className="mt-2 w-full justify-center">
+                  <Link href="/analise" onClick={() => setIsMobileMenuOpen(false)}>
+                    Abrir analise
+                  </Link>
+                </Button>
+              </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.header>
 
       {/* Hero */}
@@ -160,13 +215,13 @@ export default function Home() {
             transition={{ duration: 0.6 }}
             className="mt-8 flex flex-wrap items-center gap-3"
           >
-            <Button asChild size="lg" className="rounded-full px-7">
+            <Button asChild size="lg" className="w-full rounded-full px-7 sm:w-auto">
               <Link href="/analise">
                 Testar analise interativa
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild variant="outline" size="lg" className="rounded-full px-7">
+            <Button asChild variant="outline" size="lg" className="w-full rounded-full px-7 sm:w-auto">
               <a href="mailto:guilerstudies@gmail.com?subject=Contato%20GeoRisk">
                 Falar com o time
               </a>
@@ -379,7 +434,7 @@ export default function Home() {
                 Acesse a analise interativa e veja o risco por coordenada.
               </h3>
             </div>
-            <Button asChild size="lg" className="rounded-full px-7">
+            <Button asChild size="lg" className="w-full rounded-full px-7 md:w-auto">
               <Link href="/analise">
                 Ir para analise
                 <ArrowRight className="h-4 w-4" />
