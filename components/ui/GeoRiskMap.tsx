@@ -5,8 +5,10 @@ import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
 import * as turf from "@turf/turf"
 import {
   Droplets,
+  Eye,
   Layers,
   Loader2,
+  Minimize2,
   Mountain,
   RotateCcw,
   ShieldAlert,
@@ -476,6 +478,7 @@ export default function GeoRiskMap() {
   const [locationError, setLocationError] = useState<string | null>(cachedInitialLocationResult?.error ?? null)
   const [hasSelection, setHasSelection] = useState(false)
   const [is3DMode, setIs3DMode] = useState(true)
+  const [isDesktopAnalysisOpen, setIsDesktopAnalysisOpen] = useState(false)
 
   const totalScore = getTotalScore(riskData)
   const normalizedRiskLevel = deriveRiskLevel(riskData?.risk_level, totalScore)
@@ -502,6 +505,7 @@ export default function GeoRiskMap() {
   })
   const statusBadgeLabel = isLocatingUser ? "Localizando voce..." : riskDisplay.label
   const showStatusSpinner = isLoading || isLocatingUser
+  const desktopPanelId = "desktop-analysis-panel"
   const soilData = riskData?.environmental_data?.soil
   const widgetTone = getRiskWidgetTone(isDarkMode)
   type InsightBadge = {
@@ -872,6 +876,12 @@ export default function GeoRiskMap() {
     })
   }, [resolvedTheme, hasSelection, center, radius, is3DMode, riskData, totalScore, isLoading, error])
 
+  useEffect(() => {
+    if (!riskData) {
+      setIsDesktopAnalysisOpen(false)
+    }
+  }, [riskData])
+
   function handleRadiusChange(value: string) {
     setRadius(parseRadius(value))
   }
@@ -886,6 +896,7 @@ export default function GeoRiskMap() {
     setError(null)
     setHasSelection(false)
     setIs3DMode(false)
+    setIsDesktopAnalysisOpen(false)
     latestRequestRef.current += 1
 
     if (!map) return
@@ -1193,20 +1204,92 @@ export default function GeoRiskMap() {
           </div>
         )}
 
-        {riskData && (
-          <div className="hidden md:block absolute bottom-3 right-3 z-20 w-[calc(100%-1.5rem)] max-w-md rounded-lg border border-border/80 bg-card/95 p-4 text-sm shadow-xl lg:bottom-4 lg:right-4">
-            <p className="text-sm">
-              <span className="font-semibold">Rio mais proximo:</span> {riskData.rio_mais_proximo}
-            </p>
-            <p className="mt-1 text-sm">
-              <span className="font-semibold">Distancia:</span> {riskData.distancia_rio_m.toFixed(1)} m
-            </p>
-            <p className="mt-1 text-sm">
-              <span className="font-semibold">Queda relativa:</span>{" "}
-              {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m.toFixed(2)} m`}
-            </p>
+        {riskData && !isDesktopAnalysisOpen && (
+          <div className="hidden lg:block absolute bottom-3 right-3 z-20 lg:bottom-4 lg:right-4">
+            <Button
+              variant="outline"
+              size="sm"
+              aria-expanded={isDesktopAnalysisOpen}
+              aria-controls={desktopPanelId}
+              className={cn(
+                "group h-11 rounded-full border px-3.5 shadow-xl backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-2xl",
+                isDarkMode
+                  ? "border-slate-700/80 bg-slate-950/85 text-slate-100 hover:border-sky-500/60 hover:bg-slate-900/90"
+                  : "border-slate-200/90 bg-white/95 text-slate-800 hover:border-sky-300 hover:bg-white"
+              )}
+              onClick={() => setIsDesktopAnalysisOpen(true)}
+            >
+              <Eye className="mr-2 h-4 w-4" />
+              <span className="font-medium">Abrir analise</span>
+            </Button>
+          </div>
+        )}
 
-            <div className="markdown-body mt-3 max-h-40 overflow-y-auto rounded-md border border-border/70 bg-background/70 p-3 text-sm leading-relaxed">
+        {riskData && isDesktopAnalysisOpen && (
+          <div
+            id={desktopPanelId}
+            className={cn(
+              "hidden lg:block absolute bottom-3 right-3 z-20 w-[calc(100%-1.5rem)] max-w-md rounded-2xl border p-4 text-sm shadow-2xl backdrop-blur-md lg:bottom-4 lg:right-4",
+              isDarkMode ? "border-slate-700/80 bg-slate-950/90" : "border-slate-200/80 bg-white/95"
+            )}
+          >
+            <div
+              className={cn(
+                "mb-3 flex items-start justify-between gap-3 border-b pb-3",
+                isDarkMode ? "border-slate-800/80" : "border-slate-200/90"
+              )}
+            >
+              <div className="min-w-0">
+                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                  Analise detalhada
+                </p>
+                <p className="mt-1 text-sm font-semibold">
+                  {riskDisplay.label}
+                  {totalScore !== null ? ` | ${formatPercent(totalScore)}` : ""}
+                </p>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                aria-label="Fechar analise"
+                className={cn(
+                  "h-8 w-8 rounded-full text-muted-foreground transition-all duration-200 hover:scale-105",
+                  isDarkMode ? "hover:bg-slate-800/80 hover:text-slate-100" : "hover:bg-slate-100 hover:text-slate-900"
+                )}
+                onClick={() => setIsDesktopAnalysisOpen(false)}
+              >
+                <Minimize2 className="h-4 w-4" />
+              </Button>
+            </div>
+
+            <div
+              className={cn(
+                "grid grid-cols-3 gap-2 rounded-xl border p-2.5 text-xs",
+                isDarkMode ? "border-slate-800/80 bg-slate-900/70" : "border-slate-200 bg-slate-50/90"
+              )}
+            >
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Rio</p>
+                <p className="mt-1 break-words text-sm font-medium">{riskData.rio_mais_proximo}</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Distancia</p>
+                <p className="mt-1 text-sm font-medium">{riskData.distancia_rio_m.toFixed(1)} m</p>
+              </div>
+              <div>
+                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Queda</p>
+                <p className="mt-1 text-sm font-medium">
+                  {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m.toFixed(2)} m`}
+                </p>
+              </div>
+            </div>
+
+            <div
+              className={cn(
+                "markdown-body mt-3 max-h-44 overflow-y-auto rounded-xl border p-3 text-sm leading-relaxed",
+                isDarkMode ? "border-slate-800/80 bg-slate-900/65" : "border-border/70 bg-background/75"
+              )}
+            >
               <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
             </div>
           </div>
