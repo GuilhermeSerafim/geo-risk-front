@@ -459,7 +459,9 @@ function parseRadius(inputValue: string) {
 
 export default function GeoRiskMap() {
   const { resolvedTheme } = useTheme()
-  const isDarkMode = resolvedTheme === "dark"
+  const [mounted, setMounted] = useState(false)
+  const effectiveResolvedTheme = mounted ? resolvedTheme : undefined
+  const isDarkMode = effectiveResolvedTheme === "dark"
   const mapContainerRef = useRef<HTMLDivElement | null>(null)
   const mapRef = useRef<mapboxgl.Map | null>(null)
   const mapStyleRef = useRef<string>(DAY_MAP_STYLE)
@@ -568,6 +570,10 @@ export default function GeoRiskMap() {
       badges: soilBadges,
     },
   ]
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   function clearCircleLayers() {
     const map = mapRef.current
@@ -745,7 +751,7 @@ export default function GeoRiskMap() {
       return
     }
 
-    const initialStyle = getMapStyle(resolvedTheme)
+    const initialStyle = getMapStyle(effectiveResolvedTheme)
     mapStyleRef.current = initialStyle
 
     const map = new mapboxgl.Map({
@@ -851,7 +857,7 @@ export default function GeoRiskMap() {
     const map = mapRef.current
     if (!map) return
 
-    const nextStyle = getMapStyle(resolvedTheme)
+    const nextStyle = getMapStyle(effectiveResolvedTheme)
     if (nextStyle === mapStyleRef.current) return
 
     mapStyleRef.current = nextStyle
@@ -874,7 +880,7 @@ export default function GeoRiskMap() {
         enable3DMode()
       }
     })
-  }, [resolvedTheme, hasSelection, center, radius, is3DMode, riskData, totalScore, isLoading, error])
+  }, [effectiveResolvedTheme, hasSelection, center, radius, is3DMode, riskData, totalScore, isLoading, error])
 
   useEffect(() => {
     if (!riskData) {
