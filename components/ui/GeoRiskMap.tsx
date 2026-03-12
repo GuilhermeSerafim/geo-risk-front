@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/drawer"
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
-const DEFAULT_CENTER = { lng: -49.2415, lat: -25.4388 }
+const DEFAULT_CENTER = { lng: -51.9253, lat: -14.235 }
 const DEFAULT_RADIUS = 600
 const MAX_RADIUS = 4000
 const MIN_RADIUS = 100
@@ -50,6 +50,97 @@ if (MAPBOX_TOKEN) {
 }
 
 type MapCenter = { lng: number; lat: number }
+
+const GEOLOCATION_OPTIONS: PositionOptions = {
+  enableHighAccuracy: true,
+  timeout: 12000,
+  maximumAge: 0,
+}
+const USER_LOCATION_ZOOM = 14.5
+const BRAZIL_OVERVIEW_ZOOM = 4.2
+const AUTO_ANALYZE_DEDUP_WINDOW_MS = 4000
+
+type InitialLocationResult = {
+  center: MapCenter | null
+  error: string | null
+}
+
+let initialLocationPromise: Promise<InitialLocationResult> | null = null
+let cachedInitialLocationResult: InitialLocationResult | null = null
+let lastAutoAnalyzeCenter: MapCenter | null = null
+let lastAutoAnalyzeAt = 0
+
+function getGeolocationErrorMessage(error: GeolocationPositionError) {
+  if (error.code === error.PERMISSION_DENIED) {
+    return "Permissao de localizacao negada. Exibindo o mapa no Brasil."
+  }
+  if (error.code === error.TIMEOUT) {
+    return "Tempo limite ao buscar localizacao. Exibindo o mapa no Brasil."
+  }
+  return "Nao foi possivel obter sua localizacao. Exibindo o mapa no Brasil."
+}
+
+function getInitialUserLocation() {
+  if (cachedInitialLocationResult) {
+    return Promise.resolve(cachedInitialLocationResult)
+  }
+  if (initialLocationPromise) {
+    return initialLocationPromise
+  }
+  if (typeof window === "undefined" || !("geolocation" in window.navigator)) {
+    const unsupportedResult: InitialLocationResult = {
+      center: null,
+      error: "Geolocalizacao indisponivel no navegador. Exibindo o mapa no Brasil.",
+    }
+    cachedInitialLocationResult = unsupportedResult
+    return Promise.resolve(unsupportedResult)
+  }
+
+  initialLocationPromise = new Promise<InitialLocationResult>((resolve) => {
+    window.navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const successResult: InitialLocationResult = {
+          center: {
+            lng: position.coords.longitude,
+            lat: position.coords.latitude,
+          },
+          error: null,
+        }
+        cachedInitialLocationResult = successResult
+        resolve(successResult)
+      },
+      (geoError) => {
+        const errorResult: InitialLocationResult = {
+          center: null,
+          error: getGeolocationErrorMessage(geoError),
+        }
+        cachedInitialLocationResult = errorResult
+        resolve(errorResult)
+      },
+      GEOLOCATION_OPTIONS
+    )
+  }).finally(() => {
+    initialLocationPromise = null
+  })
+
+  return initialLocationPromise
+}
+
+function shouldAutoAnalyze(center: MapCenter) {
+  const now = Date.now()
+  const hasSameCenter =
+    lastAutoAnalyzeCenter !== null &&
+    Math.abs(lastAutoAnalyzeCenter.lng - center.lng) < 0.000001 &&
+    Math.abs(lastAutoAnalyzeCenter.lat - center.lat) < 0.000001
+
+  if (hasSameCenter && now - lastAutoAnalyzeAt < AUTO_ANALYZE_DEDUP_WINDOW_MS) {
+    return false
+  }
+
+  lastAutoAnalyzeCenter = center
+  lastAutoAnalyzeAt = now
+  return true
+}
 
 type RiskDisplay = {
   label: string
@@ -373,14 +464,18 @@ export default function GeoRiskMap() {
   const markerRef = useRef<mapboxgl.Marker | null>(null)
   const radiusRef = useRef(DEFAULT_RADIUS)
   const latestRequestRef = useRef(0)
+  const hasResolvedInitialLocationRef = useRef(false)
+  const userInitialCenterRef = useRef<MapCenter | null>(cachedInitialLocationResult?.center ?? null)
 
   const [center, setCenter] = useState<MapCenter>(DEFAULT_CENTER)
   const [radius, setRadius] = useState(DEFAULT_RADIUS)
   const [riskData, setRiskData] = useState<RiskResponse | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isLocatingUser, setIsLocatingUser] = useState(false)
+  const [locationError, setLocationError] = useState<string | null>(cachedInitialLocationResult?.error ?? null)
   const [hasSelection, setHasSelection] = useState(false)
-  const [is3DMode, setIs3DMode] = useState(false)
+  const [is3DMode, setIs3DMode] = useState(true)
 
   const totalScore = getTotalScore(riskData)
   const normalizedRiskLevel = deriveRiskLevel(riskData?.risk_level, totalScore)
@@ -405,6 +500,8 @@ export default function GeoRiskMap() {
     hasSelection,
     hasError: Boolean(error),
   })
+  const statusBadgeLabel = isLocatingUser ? "Localizando voce..." : riskDisplay.label
+  const showStatusSpinner = isLoading || isLocatingUser
   const soilData = riskData?.environmental_data?.soil
   const widgetTone = getRiskWidgetTone(isDarkMode)
   type InsightBadge = {
@@ -651,13 +748,14 @@ export default function GeoRiskMap() {
       container: mapContainerRef.current,
       style: initialStyle,
       center: [DEFAULT_CENTER.lng, DEFAULT_CENTER.lat],
-      zoom: 13.5,
-      pitch: 0,
-      bearing: 0,
+      zoom: BRAZIL_OVERVIEW_ZOOM,
+      pitch: 58,
+      bearing: -18,
       antialias: true,
     })
 
     mapRef.current = map
+    let isMapDisposed = false
 
     const handleMapClick = (event: mapboxgl.MapMouseEvent) => {
       const nextCenter = { lng: event.lngLat.lng, lat: event.lngLat.lat }
@@ -689,9 +787,44 @@ export default function GeoRiskMap() {
 
       geocoder.on("result", handleGeocoderResult)
       map.addControl(geocoder, "top-left")
+
+      if (is3DMode) {
+        enable3DMode()
+      }
+
+      if (hasResolvedInitialLocationRef.current) return
+      hasResolvedInitialLocationRef.current = true
+
+      setIsLocatingUser(true)
+      setLocationError(null)
+
+      void getInitialUserLocation().then((result) => {
+        if (isMapDisposed || mapRef.current !== map) return
+
+        setIsLocatingUser(false)
+        setLocationError(result.error)
+
+        if (!result.center) {
+          return
+        }
+
+        userInitialCenterRef.current = result.center
+        setCenter(result.center)
+        setHasSelection(true)
+        map.flyTo({
+          center: [result.center.lng, result.center.lat],
+          zoom: USER_LOCATION_ZOOM,
+          duration: 900,
+        })
+
+        if (shouldAutoAnalyze(result.center)) {
+          void drawAndAnalyze(result.center, DEFAULT_RADIUS)
+        }
+      })
     })
 
     return () => {
+      isMapDisposed = true
       map.off("click", handleMapClick)
       markerRef.current?.remove()
       markerRef.current = null
@@ -745,7 +878,9 @@ export default function GeoRiskMap() {
 
   function handleReset() {
     const map = mapRef.current
-    setCenter(DEFAULT_CENTER)
+    const resetCenter = userInitialCenterRef.current ?? DEFAULT_CENTER
+    const resetZoom = userInitialCenterRef.current ? USER_LOCATION_ZOOM : BRAZIL_OVERVIEW_ZOOM
+    setCenter(resetCenter)
     setRadius(DEFAULT_RADIUS)
     setRiskData(null)
     setError(null)
@@ -755,7 +890,7 @@ export default function GeoRiskMap() {
 
     if (!map) return
 
-    map.flyTo({ center: [DEFAULT_CENTER.lng, DEFAULT_CENTER.lat], zoom: 13.5, duration: 800 })
+    map.flyTo({ center: [resetCenter.lng, resetCenter.lat], zoom: resetZoom, duration: 800 })
     disable3DMode()
     clearCircleLayers()
     markerRef.current?.remove()
@@ -1021,8 +1156,8 @@ export default function GeoRiskMap() {
               riskDisplay.badge
             )}
           >
-            {isLoading && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
-            {riskDisplay.label}
+            {showStatusSpinner && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+            {statusBadgeLabel}
             {totalScore !== null ? ` | Score ${formatPercent(totalScore)}` : ""}
           </div>
         </div>
@@ -1050,7 +1185,11 @@ export default function GeoRiskMap() {
 
         {!hasSelection && (
           <div className="pointer-events-none hidden lg:block absolute bottom-3 left-3 z-20 max-w-xs rounded-lg border border-border/70 bg-background/90 p-3 text-sm text-muted-foreground shadow-lg lg:bottom-4 lg:left-4">
-            Clique no mapa para calcular o risco ou busque um endereco para iniciar.
+            {isLocatingUser
+              ? "Detectando sua localizacao para iniciar automaticamente..."
+              : locationError
+                ? `${locationError} Clique no mapa para calcular o risco ou busque um endereco para iniciar.`
+                : "Clique no mapa para calcular o risco ou busque um endereco para iniciar."}
           </div>
         )}
 
