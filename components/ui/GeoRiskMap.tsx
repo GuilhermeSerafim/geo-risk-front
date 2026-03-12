@@ -626,7 +626,16 @@ export default function GeoRiskMap() {
     map.setPaintProperty("analysis-circle-outline", "line-color", color)
 
     markerRef.current?.remove()
-    markerRef.current = new mapboxgl.Marker({ color })
+    const wrapper = document.createElement("div")
+    wrapper.className = "relative flex items-center justify-center w-12 h-12 cursor-pointer group pointer-events-auto"
+    wrapper.innerHTML = `
+      <div class="absolute w-full h-full rounded-full opacity-25 animate-[ping_3s_ease-in-out_infinite] group-hover:opacity-40 transition-opacity" style="background-color: ${color};"></div>
+      <div class="absolute inset-[8px] rounded-full border-2 border-white/60 shadow-[0_0_15px_rgba(0,0,0,0.3)] backdrop-blur-md transition-all duration-300 group-hover:scale-110 group-hover:border-white/90" style="background-color: ${color}40;"></div>
+      <div class="absolute inset-[15px] rounded-full transition-transform duration-300 group-hover:scale-95 shadow-[inset_0_2px_4px_rgba(255,255,255,0.4)]" style="background-color: ${color}; box-shadow: 0 0 10px ${color};"></div>
+      <div class="absolute inset-[21px] rounded-full bg-white shadow-sm"></div>
+    `
+
+    markerRef.current = new mapboxgl.Marker({ element: wrapper })
       .setLngLat([nextCenter.lng, nextCenter.lat])
       .addTo(map)
   }
@@ -1211,22 +1220,22 @@ export default function GeoRiskMap() {
         )}
 
         {riskData && !isDesktopAnalysisOpen && (
-          <div className="hidden lg:block absolute bottom-3 right-3 z-20 lg:bottom-4 lg:right-4">
+          <div className="hidden lg:flex absolute bottom-8 right-8 z-20">
             <Button
               variant="outline"
               size="sm"
               aria-expanded={isDesktopAnalysisOpen}
               aria-controls={desktopPanelId}
               className={cn(
-                "group h-11 rounded-full border px-3.5 shadow-xl backdrop-blur-md transition-all duration-200 hover:-translate-y-0.5 hover:scale-[1.02] hover:shadow-2xl",
+                "group h-12 rounded-full border px-5 cursor-pointer shadow-lg backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:shadow-xl",
                 isDarkMode
-                  ? "border-slate-700/80 bg-slate-950/85 text-slate-100 hover:border-sky-500/60 hover:bg-slate-900/90"
-                  : "border-slate-200/90 bg-white/95 text-slate-800 hover:border-sky-300 hover:bg-white"
+                  ? "border-white/10 bg-slate-950/60 text-slate-100 hover:border-sky-500/50 hover:bg-slate-900/80"
+                  : "border-slate-200/80 bg-white/70 text-slate-800 hover:border-sky-400/50 hover:bg-white/90"
               )}
               onClick={() => setIsDesktopAnalysisOpen(true)}
             >
-              <Eye className="mr-2 h-4 w-4" />
-              <span className="font-medium">Abrir analise</span>
+              <Eye className="mr-2 h-4 w-4 transition-transform group-hover:scale-110" />
+              <span className="font-semibold tracking-tight">Ver Analise Completa</span>
             </Button>
           </div>
         )}
@@ -1235,32 +1244,33 @@ export default function GeoRiskMap() {
           <div
             id={desktopPanelId}
             className={cn(
-              "hidden lg:block absolute bottom-3 right-3 z-20 w-[calc(100%-1.5rem)] max-w-md rounded-2xl border p-4 text-sm shadow-2xl backdrop-blur-md lg:bottom-4 lg:right-4",
-              isDarkMode ? "border-slate-700/80 bg-slate-950/90" : "border-slate-200/80 bg-white/95"
+              "hidden lg:flex flex-col absolute bottom-8 right-8 z-20 w-[440px] max-h-[80vh] rounded-[24px] border shadow-2xl backdrop-blur-2xl transition-all duration-500 animate-in fade-in slide-in-from-bottom-8",
+              isDarkMode 
+                ? "border-white/10 bg-slate-950/75 shadow-black/80" 
+                : "border-slate-200/60 bg-white/80 shadow-slate-300/50"
             )}
           >
-            <div
-              className={cn(
-                "mb-3 flex items-start justify-between gap-3 border-b pb-3",
-                isDarkMode ? "border-slate-800/80" : "border-slate-200/90"
-              )}
-            >
-              <div className="min-w-0">
-                <p className="text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
-                  Analise detalhada
-                </p>
-                <p className="mt-1 text-sm font-semibold">
-                  {riskDisplay.label}
-                  {totalScore !== null ? ` | ${formatPercent(totalScore)}` : ""}
-                </p>
+            <div className="flex items-center justify-between px-6 py-5 border-b border-border/10 shrink-0">
+              <div className="flex items-center gap-3 w-full">
+                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full border", totalScoreAppearance.indicator)}>
+                  <SummaryIcon className="h-5 w-5" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h3 className={cn("text-base font-semibold tracking-tight", isDarkMode ? "text-slate-100" : "text-slate-900")}>Analise de Risco</h3>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <div className={cn("h-1.5 w-1.5 rounded-full shrink-0", riskDisplay.pulse && "animate-pulse")} style={{ backgroundColor: riskDisplay.color }} />
+                    <span className="text-xs font-medium text-muted-foreground truncate">{riskDisplay.label} {totalScore !== null && `· Score ${formatPercent(totalScore)}`}</span>
+                  </div>
+                </div>
               </div>
+
               <Button
                 variant="ghost"
                 size="icon"
                 aria-label="Fechar analise"
                 className={cn(
-                  "h-8 w-8 rounded-full text-muted-foreground transition-all duration-200 hover:scale-105",
-                  isDarkMode ? "hover:bg-slate-800/80 hover:text-slate-100" : "hover:bg-slate-100 hover:text-slate-900"
+                  "h-8 w-8 shrink-0 rounded-full cursor-pointer ml-3 transition-all duration-200 hover:rotate-90",
+                  isDarkMode ? "hover:bg-white/10 text-slate-400 hover:text-white" : "hover:bg-slate-200/80 text-slate-500 hover:text-slate-900"
                 )}
                 onClick={() => setIsDesktopAnalysisOpen(false)}
               >
@@ -1268,35 +1278,39 @@ export default function GeoRiskMap() {
               </Button>
             </div>
 
-            <div
-              className={cn(
-                "grid grid-cols-3 gap-2 rounded-xl border p-2.5 text-xs",
-                isDarkMode ? "border-slate-800/80 bg-slate-900/70" : "border-slate-200 bg-slate-50/90"
-              )}
-            >
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Rio</p>
-                <p className="mt-1 break-words text-sm font-medium">{riskData.rio_mais_proximo}</p>
+            <div className="overflow-y-auto p-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/50 [&::-webkit-scrollbar-thumb]:rounded-full">
+              <div className="grid grid-cols-[1.5fr_1fr_1fr] gap-3 mb-6">
+                <div className={cn("flex flex-col gap-1 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Corpo d'Agua</span>
+                  <span className={cn("text-sm font-semibold line-clamp-2 leading-tight break-words", isDarkMode ? "text-slate-200" : "text-slate-800")} title={riskData.rio_mais_proximo}>{riskData.rio_mais_proximo}</span>
+                </div>
+                <div className={cn("flex flex-col gap-1 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Distancia</span>
+                  <span className={cn("text-sm font-semibold", isDarkMode ? "text-slate-200" : "text-slate-800")}>{riskData.distancia_rio_m.toFixed(1)}m</span>
+                </div>
+                <div className={cn("flex flex-col gap-1 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
+                  <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Elevacao</span>
+                  <span className={cn("text-sm font-semibold", isDarkMode ? "text-slate-200" : "text-slate-800")}>
+                    {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m > 0 ? '+' : ''}${riskData.queda_relativa_m.toFixed(1)}m`}
+                  </span>
+                </div>
               </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Distancia</p>
-                <p className="mt-1 text-sm font-medium">{riskData.distancia_rio_m.toFixed(1)} m</p>
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-wide text-muted-foreground">Queda</p>
-                <p className="mt-1 text-sm font-medium">
-                  {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m.toFixed(2)} m`}
-                </p>
-              </div>
-            </div>
 
-            <div
-              className={cn(
-                "markdown-body mt-3 max-h-44 overflow-y-auto rounded-xl border p-3 text-sm leading-relaxed",
-                isDarkMode ? "border-slate-800/80 bg-slate-900/65" : "border-border/70 bg-background/75"
-              )}
-            >
-              <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
+              <div className="space-y-4">
+                <h4 className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-2">
+                  <div className="h-px w-3 bg-muted-foreground/30"></div>
+                  Sintese da Inteligencia
+                  <div className="h-px flex-1 bg-muted-foreground/30"></div>
+                </h4>
+                <div className={cn(
+                  "prose prose-sm max-w-none text-sm leading-relaxed",
+                  isDarkMode 
+                    ? "prose-invert prose-p:text-slate-300 prose-strong:text-white prose-li:text-slate-300" 
+                    : "prose-slate prose-p:text-slate-600 prose-strong:text-slate-900 prose-li:text-slate-600"
+                )}>
+                  <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
+                </div>
+              </div>
             </div>
           </div>
         )}
