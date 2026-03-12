@@ -1281,16 +1281,16 @@ export default function GeoRiskMap() {
             </div>
 
             <div className="overflow-y-auto p-6 [&::-webkit-scrollbar]:w-1.5 [&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar-thumb]:bg-border/50 [&::-webkit-scrollbar-thumb]:rounded-full">
-              <div className="grid grid-cols-[1.5fr_1fr_1fr] gap-3 mb-6">
-                <div className={cn("flex flex-col gap-1 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
+              <div className="grid grid-cols-[1.5fr_1fr_1fr] gap-3 mb-6 items-stretch">
+                <div className={cn("flex min-h-[98px] flex-col justify-between gap-3 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Corpo d'Agua</span>
                   <span className={cn("text-sm font-semibold line-clamp-2 leading-tight break-words", isDarkMode ? "text-slate-200" : "text-slate-800")} title={riskData.rio_mais_proximo}>{riskData.rio_mais_proximo}</span>
                 </div>
-                <div className={cn("flex flex-col gap-1 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
+                <div className={cn("flex min-h-[98px] flex-col justify-between gap-3 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Distancia</span>
                   <span className={cn("text-sm font-semibold", isDarkMode ? "text-slate-200" : "text-slate-800")}>{riskData.distancia_rio_m.toFixed(1)}m</span>
                 </div>
-                <div className={cn("flex flex-col gap-1 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
+                <div className={cn("flex min-h-[98px] flex-col justify-between gap-3 rounded-2xl border p-3", isDarkMode ? "border-white/5 bg-white/[0.02]" : "border-slate-200/50 bg-slate-50/50")}>
                   <span className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Elevacao</span>
                   <span className={cn("text-sm font-semibold", isDarkMode ? "text-slate-200" : "text-slate-800")}>
                     {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m > 0 ? '+' : ''}${riskData.queda_relativa_m.toFixed(1)}m`}
