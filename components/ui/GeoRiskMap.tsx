@@ -150,6 +150,25 @@ type RiskDisplay = {
   pulse?: boolean
 }
 
+type FactorScoreAppearance = {
+  label: string
+  text: string
+  badge: string
+  fill: string
+  panel: string
+  indicator: string
+}
+
+type OverallRiskAppearance = {
+  label: string
+  badge: string
+  text: string
+  panel: string
+  indicator: string
+  icon: typeof Layers
+  pulse?: boolean
+}
+
 function normalizeRiskLevel(level: string | undefined): RiskLevel | undefined {
   if (!level) return undefined
 
@@ -318,7 +337,10 @@ function getRiskWidgetTone(isDarkMode: boolean) {
   }
 }
 
-function getScoreAppearance(score: number | null | undefined, isDarkMode: boolean) {
+function getFactorScoreAppearance(
+  score: number | null | undefined,
+  isDarkMode: boolean
+): FactorScoreAppearance {
   const percentage = toPercentage(score)
 
   if (percentage === null) {
@@ -398,6 +420,157 @@ function getScoreAppearance(score: number | null | undefined, isDarkMode: boolea
         panel: "border-rose-100 bg-rose-50/40",
         indicator: "border-rose-200 bg-rose-50 text-rose-700",
       }
+}
+
+function getOverallRiskAppearance(params: {
+  level: RiskLevel | undefined
+  isLoading: boolean
+  hasSelection: boolean
+  hasError: boolean
+  isDarkMode: boolean
+}): OverallRiskAppearance {
+  const display = getRiskDisplay(params)
+
+  if (params.isLoading) {
+    return params.isDarkMode
+      ? {
+          label: display.label,
+          badge: display.badge,
+          text: "text-sky-300",
+          panel: "border-sky-400/15 bg-slate-900/75",
+          indicator: "border-sky-400/20 bg-sky-400/10 text-sky-200",
+          icon: Layers,
+          pulse: true,
+        }
+      : {
+          label: display.label,
+          badge: display.badge,
+          text: "text-sky-700",
+          panel: "border-sky-100 bg-sky-50/40",
+          indicator: "border-sky-200 bg-sky-50 text-sky-700",
+          icon: Layers,
+          pulse: true,
+        }
+  }
+
+  if (params.hasError) {
+    return params.isDarkMode
+      ? {
+          label: display.label,
+          badge: display.badge,
+          text: "text-rose-300",
+          panel: "border-rose-400/15 bg-slate-900/75",
+          indicator: "border-rose-400/20 bg-rose-400/10 text-rose-200",
+          icon: ShieldAlert,
+        }
+      : {
+          label: display.label,
+          badge: display.badge,
+          text: "text-rose-700",
+          panel: "border-rose-100 bg-rose-50/40",
+          indicator: "border-rose-200 bg-rose-50 text-rose-700",
+          icon: ShieldAlert,
+        }
+  }
+
+  if (!params.hasSelection) {
+    return params.isDarkMode
+      ? {
+          label: display.label,
+          badge: display.badge,
+          text: "text-sky-300",
+          panel: "border-sky-400/15 bg-slate-900/75",
+          indicator: "border-sky-400/20 bg-sky-400/10 text-sky-200",
+          icon: Layers,
+          pulse: true,
+        }
+      : {
+          label: display.label,
+          badge: display.badge,
+          text: "text-sky-700",
+          panel: "border-sky-100 bg-sky-50/40",
+          indicator: "border-sky-200 bg-sky-50 text-sky-700",
+          icon: Layers,
+          pulse: true,
+        }
+  }
+
+  switch (params.level) {
+    case "baixo":
+      return params.isDarkMode
+        ? {
+            label: display.label,
+            badge: display.badge,
+            text: "text-emerald-300",
+            panel: "border-emerald-400/15 bg-slate-900/75",
+            indicator: "border-emerald-400/20 bg-emerald-400/10 text-emerald-200",
+            icon: ShieldCheck,
+          }
+        : {
+            label: display.label,
+            badge: display.badge,
+            text: "text-emerald-700",
+            panel: "border-emerald-100 bg-emerald-50/40",
+            indicator: "border-emerald-200 bg-emerald-50 text-emerald-700",
+            icon: ShieldCheck,
+          }
+    case "medio":
+      return params.isDarkMode
+        ? {
+            label: display.label,
+            badge: display.badge,
+            text: "text-amber-300",
+            panel: "border-amber-400/15 bg-slate-900/75",
+            indicator: "border-amber-400/20 bg-amber-400/10 text-amber-200",
+            icon: ShieldAlert,
+          }
+        : {
+            label: display.label,
+            badge: display.badge,
+            text: "text-amber-700",
+            panel: "border-amber-100 bg-amber-50/40",
+            indicator: "border-amber-200 bg-amber-50 text-amber-700",
+            icon: ShieldAlert,
+          }
+    case "alto":
+      return params.isDarkMode
+        ? {
+            label: display.label,
+            badge: display.badge,
+            text: "text-rose-300",
+            panel: "border-rose-400/15 bg-slate-900/75",
+            indicator: "border-rose-400/20 bg-rose-400/10 text-rose-200",
+            icon: ShieldAlert,
+            pulse: true,
+          }
+        : {
+            label: display.label,
+            badge: display.badge,
+            text: "text-rose-700",
+            panel: "border-rose-100 bg-rose-50/40",
+            indicator: "border-rose-200 bg-rose-50 text-rose-700",
+            icon: ShieldAlert,
+            pulse: true,
+          }
+    default:
+      return params.isDarkMode
+        ? {
+            label: display.label,
+            badge: display.badge,
+            text: "text-slate-200",
+            panel: "border-slate-800 bg-slate-900/75",
+            indicator: "border-slate-700/80 bg-slate-900/90 text-slate-300",
+            icon: Layers,
+          }
+        : {
+            label: display.label,
+            badge: display.badge,
+            text: "text-slate-700",
+            panel: "border-slate-200 bg-white",
+            indicator: "border-slate-200 bg-slate-50 text-slate-600",
+            icon: Layers,
+          }
+  }
 }
 
 function getTotalScore(data: RiskResponse | null | undefined) {
@@ -504,7 +677,7 @@ export default function GeoRiskMap() {
     hasSelection,
     hasError: Boolean(error),
   })
-  const statusBadgeLabel = isLocatingUser ? "Localizando voce..." : riskDisplay.label
+  const statusBadgeLabel = isLocatingUser ? "Localizando você..." : riskDisplay.label
   const showStatusSpinner = isLoading || isLocatingUser
   const desktopPanelId = "desktop-analysis-panel"
   const soilData = riskData?.environmental_data?.soil
@@ -532,10 +705,14 @@ export default function GeoRiskMap() {
     })
   }
 
-  const totalScoreAppearance = getScoreAppearance(totalScore, isDarkMode)
-  const totalScorePercentage = toPercentage(totalScore)
-  const SummaryIcon =
-    totalScorePercentage === null ? Layers : totalScorePercentage > 60 ? ShieldAlert : ShieldCheck
+  const overallRiskAppearance = getOverallRiskAppearance({
+    level: normalizedRiskLevel,
+    isLoading,
+    hasSelection,
+    hasError: Boolean(error),
+    isDarkMode,
+  })
+  const SummaryIcon = overallRiskAppearance.icon
   const riskFactors: Array<{
     id: string
     title: string
@@ -946,7 +1123,7 @@ export default function GeoRiskMap() {
             className={cn(
               "rounded-[1.25rem] border p-4",
               widgetTone.summaryBase,
-              totalScoreAppearance.panel
+              overallRiskAppearance.panel
             )}
           >
             <div className="flex items-start justify-between gap-4">
@@ -955,16 +1132,16 @@ export default function GeoRiskMap() {
                   Nota de risco final
                 </p>
                 <div className="mt-3 flex flex-wrap items-end gap-3">
-                  <span className={cn("text-4xl font-semibold tracking-tight", totalScoreAppearance.text)}>
+                  <span className={cn("text-4xl font-semibold tracking-tight", overallRiskAppearance.text)}>
                     {formatPercent(totalScore)}
                   </span>
                   <span
                     className={cn(
                       "mb-1 inline-flex items-center rounded-full border px-2.5 py-1 text-xs font-medium",
-                      totalScoreAppearance.badge
+                      overallRiskAppearance.badge
                     )}
                   >
-                    {totalScoreAppearance.label}
+                    {overallRiskAppearance.label}
                   </span>
                 </div>
                 <p className={cn("mt-3 max-w-[28ch] text-xs leading-5", widgetTone.copy)}>
@@ -975,8 +1152,8 @@ export default function GeoRiskMap() {
               <div
                 className={cn(
                   "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border",
-                  totalScoreAppearance.indicator,
-                  totalScorePercentage !== null && totalScorePercentage > 60 && "animate-pulse"
+                  overallRiskAppearance.indicator,
+                  overallRiskAppearance.pulse && "animate-pulse"
                 )}
               >
                 <SummaryIcon className="h-5 w-5" />
@@ -986,7 +1163,7 @@ export default function GeoRiskMap() {
 
           <div className="space-y-3">
             {riskFactors.map((factor) => {
-              const appearance = getScoreAppearance(factor.score, isDarkMode)
+              const appearance = getFactorScoreAppearance(factor.score, isDarkMode)
               const Icon = factor.icon
               const percentage = toPercentage(factor.score) ?? 0
 
@@ -1011,9 +1188,6 @@ export default function GeoRiskMap() {
                       </div>
                       <div className="min-w-0">
                         <p className={cn("font-medium", widgetTone.factorTitle)}>{factor.title}</p>
-                        <p className={cn("mt-0.5 text-xs", widgetTone.factorSubtitle)}>
-                          Leitura atual do fator
-                        </p>
                       </div>
                     </div>
 
@@ -1254,7 +1428,7 @@ export default function GeoRiskMap() {
           >
             <div className="flex items-center justify-between px-6 py-5 border-b border-border/10 shrink-0">
               <div className="flex items-center gap-3 w-full">
-                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full border", totalScoreAppearance.indicator)}>
+                <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-full border", overallRiskAppearance.indicator)}>
                   <SummaryIcon className="h-5 w-5" />
                 </div>
                 <div className="min-w-0 flex-1">
