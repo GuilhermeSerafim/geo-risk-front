@@ -4,13 +4,13 @@ import mapboxgl from "mapbox-gl"
 import MapboxGeocoder from "@mapbox/mapbox-gl-geocoder"
 import * as turf from "@turf/turf"
 import {
+  Box,
   Droplets,
   Eye,
   Layers,
   Loader2,
   Minimize2,
   Mountain,
-  RotateCcw,
   ShieldAlert,
   ShieldCheck,
   Waves,
@@ -23,8 +23,7 @@ import type { Feature, Polygon } from "geojson"
 import { postRiskByCenterRadius, type RiskLevel, type RiskResponse } from "@/lib/api"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Drawer,
   DrawerContent,
@@ -36,7 +35,7 @@ import {
 
 const MAPBOX_TOKEN = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
 const DEFAULT_CENTER = { lng: -51.9253, lat: -14.235 }
-const DEFAULT_RADIUS = 600
+const DEFAULT_RADIUS = 100
 const MAX_RADIUS = 4000
 const MIN_RADIUS = 100
 const DAY_MAP_STYLE = "mapbox://styles/mapbox/streets-v12"
@@ -58,7 +57,7 @@ const GEOLOCATION_OPTIONS: PositionOptions = {
   timeout: 12000,
   maximumAge: 0,
 }
-const USER_LOCATION_ZOOM = 14.5
+const USER_LOCATION_ZOOM = 16
 const BRAZIL_OVERVIEW_ZOOM = 4.2
 const AUTO_ANALYZE_DEDUP_WINDOW_MS = 4000
 
@@ -938,55 +937,7 @@ export default function GeoRiskMap() {
 
   const SidebarContent = (
     <div className="space-y-4">
-      <Card
-        className={cn(
-          "gap-4 py-4 shadow-none",
-          isDarkMode ? "border-slate-800 bg-[#111827]" : "border-border/70 bg-card/95"
-        )}
-      >
-        <CardHeader className="px-4">
-          <CardTitle className={cn("text-base", widgetTone.title)}>Controles da analise</CardTitle>
-          <CardDescription className={widgetTone.description}>
-            Clique no mapa ou busque endereco para gerar uma nova leitura.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-3 px-4 text-sm">
-          <div>
-            <label
-              className={cn(
-                "mb-1.5 block text-xs font-medium uppercase tracking-wide",
-                widgetTone.description
-              )}
-            >
-              Raio de analise (m)
-            </label>
-            <Input
-              type="number"
-              min={MIN_RADIUS}
-              max={MAX_RADIUS}
-              step={100}
-              value={radius}
-              onChange={(event) => handleRadiusChange(event.target.value)}
-              className={isDarkMode ? "border-slate-800 bg-slate-900/75 text-slate-50" : undefined}
-            />
-          </div>
-          <div className="grid grid-cols-2 gap-2">
-            <Button
-              variant={is3DMode ? "default" : "outline"}
-              onClick={toggle3D}
-              className="w-full min-h-[44px]"
-            >
-              {is3DMode ? "Desativar 3D" : "Ativar 3D"}
-            </Button>
-            <Button variant="outline" onClick={handleReset} className="w-full min-h-[44px]">
-              <RotateCcw className="h-4 w-4" />
-              Reset
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className={cn("gap-4 overflow-hidden py-4", widgetTone.shell)}>
+      <Card className={cn("gap-4 overflow-hidden py-4 border-none lg:border-solid", widgetTone.shell)}>
         <CardHeader className="px-4">
           <CardTitle className={cn("text-base tracking-tight", widgetTone.title)}>Motor de risco</CardTitle>
         </CardHeader>
@@ -1174,7 +1125,7 @@ export default function GeoRiskMap() {
       <div className="relative min-h-[360px] flex-1 overflow-hidden lg:min-h-0">
         <div ref={mapContainerRef} className="h-full w-full" />
 
-        <div className="pointer-events-none absolute inset-x-3 top-3 z-20 flex justify-end">
+        <div className="pointer-events-none absolute right-3 top-3 z-20 sm:right-4 sm:top-4">
           <div
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium shadow-sm",
@@ -1188,18 +1139,69 @@ export default function GeoRiskMap() {
           </div>
         </div>
 
+        <div
+          className={cn(
+            "absolute bottom-8 left-4 z-20 sm:bottom-8 sm:left-5",
+            !hasSelection && "lg:bottom-32"
+          )}
+        >
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={toggle3D}
+            aria-label={is3DMode ? "Desativar modo 3D do mapa" : "Ativar modo 3D do mapa"}
+            aria-pressed={is3DMode}
+            className={cn(
+              "group relative h-11 w-11 cursor-pointer overflow-hidden rounded-2xl border p-0 backdrop-blur-xl transition-all duration-300 hover:-translate-y-0.5 hover:scale-[1.03] focus-visible:ring-2 focus-visible:ring-sky-400/70 sm:h-12 sm:w-12",
+              is3DMode
+                ? "border-sky-300/60 bg-[linear-gradient(145deg,rgba(14,165,233,0.96),rgba(34,211,238,0.86))] text-white shadow-[0_14px_30px_rgba(14,165,233,0.36),inset_0_1px_1px_rgba(255,255,255,0.4)] hover:shadow-[0_18px_36px_rgba(14,165,233,0.44),inset_0_1px_1px_rgba(255,255,255,0.52)]"
+                : isDarkMode
+                  ? "border-white/10 bg-slate-950/55 text-slate-300 shadow-[0_10px_22px_rgba(2,6,23,0.38),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-sky-400/30 hover:bg-slate-900/75 hover:text-white"
+                  : "border-slate-200/80 bg-white/82 text-slate-700 shadow-[0_10px_24px_rgba(15,23,42,0.16),inset_0_1px_0_rgba(255,255,255,0.92)] hover:border-sky-300/60 hover:bg-white hover:text-slate-900"
+            )}
+            title={is3DMode ? "Desativar modo 3D" : "Ativar modo 3D"}
+          >
+            <span
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none absolute inset-[1px] rounded-[15px] transition-opacity duration-300",
+                is3DMode
+                  ? "bg-[radial-gradient(circle_at_30%_25%,rgba(255,255,255,0.36),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.22),transparent_58%)] opacity-100"
+                  : "opacity-0"
+              )}
+            />
+            <span
+              aria-hidden="true"
+              className={cn(
+                "pointer-events-none absolute inset-0 rounded-2xl transition-opacity duration-300",
+                is3DMode
+                  ? "opacity-100 shadow-[0_0_0_1px_rgba(255,255,255,0.18)_inset,0_0_22px_rgba(34,211,238,0.32)]"
+                  : "opacity-0"
+              )}
+            />
+            <Box
+              className={cn(
+                "relative h-5 w-5 transition-all duration-300 sm:h-[1.35rem] sm:w-[1.35rem]",
+                is3DMode
+                  ? "scale-100 drop-shadow-[0_4px_12px_rgba(8,47,73,0.42)]"
+                  : "group-hover:scale-110"
+              )}
+            />
+          </Button>
+        </div>
+
         {/* MOBILE DRAWER TRIGGER */}
         <div className="absolute bottom-6 left-1/2 z-30 -translate-x-1/2 lg:hidden">
           <Drawer>
             <DrawerTrigger asChild>
               <Button size="lg" className="rounded-full px-6 shadow-xl min-h-[48px]">
                 <Layers className="mr-2 h-4 w-4" />
-                Painel da Analise
+                Motor de Risco
               </Button>
             </DrawerTrigger>
             <DrawerContent className="max-h-[85vh]">
               <DrawerHeader className="text-left pb-2">
-                <DrawerTitle>Controles e Motor de Risco</DrawerTitle>
+                <DrawerTitle>Motor de Risco</DrawerTitle>
                 <DrawerDescription>Deslize para ver os detalhes da leitura.</DrawerDescription>
               </DrawerHeader>
               <div className="overflow-y-auto p-4 pt-0">
@@ -1210,7 +1212,7 @@ export default function GeoRiskMap() {
         </div>
 
         {!hasSelection && (
-          <div className="pointer-events-none hidden lg:block absolute bottom-3 left-3 z-20 max-w-xs rounded-lg border border-border/70 bg-background/90 p-3 text-sm text-muted-foreground shadow-lg lg:bottom-4 lg:left-4">
+          <div className="pointer-events-none hidden lg:block absolute bottom-8 left-3 z-20 max-w-xs rounded-lg border border-border/70 bg-background/90 p-3 text-sm text-muted-foreground shadow-lg lg:bottom-9 lg:left-4">
             {isLocatingUser
               ? "Detectando sua localizacao para iniciar automaticamente..."
               : locationError
