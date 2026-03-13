@@ -11,6 +11,7 @@ import {
   Loader2,
   Minimize2,
   Mountain,
+  Sparkles,
   ShieldAlert,
   ShieldCheck,
   Waves,
@@ -291,6 +292,16 @@ function formatPercent(score: number | null | undefined) {
   const percentage = toPercentage(score)
   if (percentage === null) return "-"
   return `${percentage}%`
+}
+
+function formatDistance(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "N/A"
+  return `${value.toFixed(1)} m`
+}
+
+function formatElevation(value: number | null | undefined) {
+  if (typeof value !== "number" || !Number.isFinite(value)) return "N/A"
+  return `${value > 0 ? "+" : ""}${value.toFixed(1)} m`
 }
 
 function getRiskWidgetTone(isDarkMode: boolean) {
@@ -682,6 +693,96 @@ export default function GeoRiskMap() {
   const desktopPanelId = "desktop-analysis-panel"
   const soilData = riskData?.environmental_data?.soil
   const widgetTone = getRiskWidgetTone(isDarkMode)
+  const hasAiFeedback = Boolean(riskData?.resposta_ia?.trim())
+  const mobileStatusScoreLabel =
+    totalScore !== null ? formatPercent(totalScore) : error ? "--" : hasSelection || showStatusSpinner ? "..." : "--"
+  const mobileStatusPanelTone = error
+    ? isDarkMode
+      ? "border-red-500/20 bg-slate-950/82 text-red-50 shadow-[0_18px_45px_rgba(2,6,23,0.48)]"
+      : "border-red-200/70 bg-white/92 text-red-950 shadow-[0_18px_40px_rgba(248,113,113,0.16)]"
+    : showStatusSpinner
+      ? isDarkMode
+        ? "border-sky-400/20 bg-slate-950/82 text-slate-50 shadow-[0_18px_45px_rgba(2,6,23,0.48)]"
+        : "border-sky-200/80 bg-white/92 text-slate-900 shadow-[0_18px_40px_rgba(14,165,233,0.14)]"
+      : hasSelection
+        ? isDarkMode
+          ? "border-white/10 bg-slate-950/82 text-slate-50 shadow-[0_18px_45px_rgba(2,6,23,0.48)]"
+          : "border-slate-200/80 bg-white/92 text-slate-900 shadow-[0_18px_40px_rgba(15,23,42,0.12)]"
+        : isDarkMode
+          ? "border-white/8 bg-slate-950/78 text-slate-100 shadow-[0_18px_45px_rgba(2,6,23,0.42)]"
+          : "border-slate-200/70 bg-white/90 text-slate-900 shadow-[0_16px_34px_rgba(15,23,42,0.1)]"
+  const mobileStatusIconTone = error
+    ? isDarkMode
+      ? "border-red-500/20 bg-red-500/10 text-red-200"
+      : "border-red-200 bg-red-50 text-red-700"
+    : showStatusSpinner
+      ? isDarkMode
+        ? "border-sky-400/20 bg-sky-400/10 text-sky-200"
+        : "border-sky-200 bg-sky-50 text-sky-700"
+      : hasSelection
+        ? isDarkMode
+          ? "border-white/10 bg-white/5 text-slate-100"
+          : "border-slate-200 bg-slate-50 text-slate-700"
+        : isDarkMode
+          ? "border-slate-800 bg-slate-900/90 text-slate-300"
+          : "border-slate-200 bg-slate-50 text-slate-600"
+  const mobileFeedbackStateLabel = error
+    ? "Falha na leitura"
+    : showStatusSpinner
+      ? hasAiFeedback
+        ? "Atualizando"
+        : "Processando"
+      : hasAiFeedback
+        ? "Sintese pronta"
+        : hasSelection
+          ? "Em preparo"
+          : "Aguardando ponto"
+  const mobileFeedbackStateTone = error
+    ? isDarkMode
+      ? "border-red-500/20 bg-red-500/10 text-red-100"
+      : "border-red-200 bg-red-50 text-red-700"
+    : showStatusSpinner
+      ? isDarkMode
+        ? "border-sky-400/20 bg-sky-400/10 text-sky-100"
+        : "border-sky-200 bg-sky-50 text-sky-700"
+      : hasAiFeedback
+        ? isDarkMode
+          ? "border-emerald-400/20 bg-emerald-400/10 text-emerald-100"
+          : "border-emerald-200 bg-emerald-50 text-emerald-700"
+        : isDarkMode
+          ? "border-white/10 bg-white/5 text-slate-200"
+          : "border-slate-200 bg-slate-100 text-slate-600"
+  const mobileFeedbackHelperText = error
+    ? error
+    : showStatusSpinner
+      ? hasAiFeedback
+        ? "Mantendo a ultima sintese enquanto atualizamos a leitura do ponto."
+        : isLocatingUser
+          ? "Estamos identificando sua localizacao para iniciar a leitura."
+          : "Estamos gerando a sintese interpretativa do ponto selecionado."
+      : hasAiFeedback
+        ? "Leitura interpretativa com contexto do ponto analisado."
+        : hasSelection
+          ? "A sintese aparecera aqui assim que a leitura tecnica for concluida."
+          : "Selecione um ponto no mapa ou pesquise um endereco para receber uma leitura interpretativa."
+  const mobileFeedbackEmptyTitle = error
+    ? "Nao foi possivel concluir a sintese"
+    : showStatusSpinner
+      ? isLocatingUser
+        ? "Localizando o ponto"
+        : "Gerando feedback da IA"
+      : hasSelection
+        ? "Aguardando conclusao da analise"
+        : "Pronto para receber a leitura"
+  const mobileFeedbackEmptyCopy = error
+    ? error
+    : showStatusSpinner
+      ? isLocatingUser
+        ? "Assim que a localizacao estiver disponivel, vamos iniciar a analise automaticamente."
+        : "Assim que a leitura terminar, a sintese interpretativa aparecera aqui."
+      : hasSelection
+        ? "A sintese interpretativa aparecera aqui assim que a leitura tecnica for concluida."
+        : "Selecione um ponto no mapa ou pesquise um endereco para receber uma sintese explicativa."
   type InsightBadge = {
     label: string
     className: string
@@ -1112,7 +1213,7 @@ export default function GeoRiskMap() {
     }
   }
 
-  const SidebarContent = (
+  const renderRiskEngineContent = () => (
     <div className="space-y-4">
       <Card className={cn("gap-4 overflow-hidden py-4 border-none lg:border-solid", widgetTone.shell)}>
         <CardHeader className="px-4">
@@ -1267,39 +1368,241 @@ export default function GeoRiskMap() {
           </div>
         </CardContent>
       </Card>
+    </div>
+  )
 
-      {/* Mobile inline results below controls in drawer */}
-      {riskData && (
-        <div className="rounded-lg border border-border/80 bg-card/95 p-4 text-sm shadow-sm md:hidden mt-4">
-          <p className="text-sm">
-            <span className="font-semibold">Rio mais proximo:</span> {riskData.rio_mais_proximo}
-          </p>
-          <p className="mt-1 text-sm">
-            <span className="font-semibold">Distancia:</span> {riskData.distancia_rio_m.toFixed(1)} m
-          </p>
-          <p className="mt-1 text-sm">
-            <span className="font-semibold">Queda relativa:</span>{" "}
-            {riskData.queda_relativa_m === null ? "N/A" : `${riskData.queda_relativa_m.toFixed(2)} m`}
-          </p>
+  const renderMobileAiFeedback = () => (
+    <section
+      className={cn(
+        "rounded-[1.5rem] border p-4 shadow-[0_18px_42px_rgba(14,165,233,0.14)]",
+        isDarkMode
+          ? "border-sky-400/15 bg-[linear-gradient(160deg,rgba(2,132,199,0.18),rgba(15,23,42,0.96)_32%,rgba(8,47,73,0.72))]"
+          : "border-sky-200/80 bg-[linear-gradient(160deg,rgba(240,249,255,0.98),rgba(255,255,255,0.98)_45%,rgba(240,253,250,0.96))]"
+      )}
+    >
+      <div className="flex items-start gap-3">
+        <div
+          className={cn(
+            "flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border",
+            isDarkMode
+              ? "border-sky-400/20 bg-sky-400/10 text-sky-100"
+              : "border-sky-200 bg-white/85 text-sky-700"
+          )}
+        >
+          {error ? (
+            <ShieldAlert className="h-5 w-5" />
+          ) : showStatusSpinner && !hasAiFeedback ? (
+            <Loader2 className="h-5 w-5 animate-spin" />
+          ) : (
+            <Sparkles className="h-5 w-5" />
+          )}
+        </div>
 
-          <div className="markdown-body mt-3 max-h-40 overflow-y-auto rounded-md border border-border/70 bg-background/70 p-3 text-sm leading-relaxed">
-            <ReactMarkdown>{riskData.resposta_ia}</ReactMarkdown>
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className={cn("text-base font-semibold tracking-tight", isDarkMode ? "text-slate-50" : "text-slate-900")}>
+              Feedback da IA
+            </h3>
+            <span
+              className={cn(
+                "inline-flex items-center rounded-full border px-2.5 py-1 text-[11px] font-medium",
+                mobileFeedbackStateTone
+              )}
+            >
+              {mobileFeedbackStateLabel}
+            </span>
+          </div>
+          <p className={cn("mt-1 text-sm leading-5", isDarkMode ? "text-slate-300" : "text-slate-600")}>
+            {mobileFeedbackHelperText}
+          </p>
+        </div>
+      </div>
+
+      {riskData ? (
+        <>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            <div
+              className={cn(
+                "col-span-2 rounded-[1.15rem] border p-3.5",
+                isDarkMode ? "border-white/8 bg-slate-950/45" : "border-white/90 bg-white/85"
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Corpo d'agua
+              </span>
+              <p
+                className={cn(
+                  "mt-2 text-sm font-semibold leading-tight break-words",
+                  isDarkMode ? "text-slate-100" : "text-slate-900"
+                )}
+                title={riskData.rio_mais_proximo}
+              >
+                {riskData.rio_mais_proximo}
+              </p>
+            </div>
+
+            <div
+              className={cn(
+                "rounded-[1.15rem] border p-3.5",
+                isDarkMode ? "border-white/8 bg-slate-950/45" : "border-white/90 bg-white/85"
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Distancia
+              </span>
+              <p className={cn("mt-2 text-sm font-semibold", isDarkMode ? "text-slate-100" : "text-slate-900")}>
+                {formatDistance(riskData.distancia_rio_m)}
+              </p>
+            </div>
+
+            <div
+              className={cn(
+                "rounded-[1.15rem] border p-3.5",
+                isDarkMode ? "border-white/8 bg-slate-950/45" : "border-white/90 bg-white/85"
+              )}
+            >
+              <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                Elevacao
+              </span>
+              <p className={cn("mt-2 text-sm font-semibold", isDarkMode ? "text-slate-100" : "text-slate-900")}>
+                {formatElevation(riskData.queda_relativa_m)}
+              </p>
+            </div>
+          </div>
+
+          <div
+            className={cn(
+              "mt-4 rounded-[1.25rem] border p-4",
+              isDarkMode ? "border-white/8 bg-slate-950/55" : "border-white/90 bg-white/92"
+            )}
+          >
+            <div className="flex items-center gap-2">
+              <span
+                className={cn(
+                  "flex h-8 w-8 items-center justify-center rounded-full border",
+                  isDarkMode ? "border-sky-400/20 bg-sky-400/10 text-sky-100" : "border-sky-200 bg-sky-50 text-sky-700"
+                )}
+              >
+                <Sparkles className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">
+                  Sintese guiada pela IA
+                </p>
+                <p className={cn("text-sm font-semibold", isDarkMode ? "text-slate-100" : "text-slate-900")}>
+                  Leitura interpretativa do ponto selecionado
+                </p>
+              </div>
+            </div>
+
+            <div
+              className={cn(
+                "feedback-markdown mt-4 max-h-64 overflow-y-auto pr-1 prose prose-sm max-w-none leading-relaxed",
+                isDarkMode
+                  ? "prose-invert prose-headings:text-white prose-p:text-slate-300 prose-strong:text-white prose-li:text-slate-300"
+                  : "prose-slate prose-headings:text-slate-900 prose-p:text-slate-700 prose-strong:text-slate-900 prose-li:text-slate-700"
+              )}
+            >
+              <ReactMarkdown>{riskData.resposta_ia?.trim() || "Sem sintese textual disponivel para este ponto."}</ReactMarkdown>
+            </div>
+          </div>
+        </>
+      ) : (
+        <div
+          role="status"
+          aria-live="polite"
+          className={cn(
+            "mt-4 rounded-[1.25rem] border px-4 py-4",
+            isDarkMode ? "border-white/8 bg-slate-950/55" : "border-white/90 bg-white/92"
+          )}
+        >
+          <div className="flex items-start gap-3">
+            <div
+              className={cn(
+                "mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full border",
+                error
+                  ? isDarkMode
+                    ? "border-red-500/20 bg-red-500/10 text-red-100"
+                    : "border-red-200 bg-red-50 text-red-700"
+                  : showStatusSpinner
+                    ? isDarkMode
+                      ? "border-sky-400/20 bg-sky-400/10 text-sky-100"
+                      : "border-sky-200 bg-sky-50 text-sky-700"
+                    : isDarkMode
+                      ? "border-sky-400/20 bg-sky-400/10 text-sky-100"
+                      : "border-sky-200 bg-sky-50 text-sky-700"
+              )}
+            >
+              {error ? (
+                <ShieldAlert className="h-4 w-4" />
+              ) : showStatusSpinner ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Sparkles className="h-4 w-4" />
+              )}
+            </div>
+
+            <div className="min-w-0">
+              <p className={cn("text-sm font-semibold", isDarkMode ? "text-slate-100" : "text-slate-900")}>
+                {mobileFeedbackEmptyTitle}
+              </p>
+              <p className={cn("mt-1 text-sm leading-5", isDarkMode ? "text-slate-300" : "text-slate-600")}>
+                {mobileFeedbackEmptyCopy}
+              </p>
+            </div>
           </div>
         </div>
       )}
-    </div>
+    </section>
   )
 
   return (
     <section className="grid h-full overflow-hidden rounded-2xl border border-border/80 bg-card/85 shadow-2xl shadow-primary/10 lg:grid-cols-[360px_1fr] lg:grid-rows-1">
       <aside className="hidden overflow-y-auto border-r border-border/70 bg-background/90 p-4 lg:block">
-        {SidebarContent}
+        {renderRiskEngineContent()}
       </aside>
 
       <div className="relative min-h-[360px] flex-1 overflow-hidden lg:min-h-0">
         <div ref={mapContainerRef} className="h-full w-full" />
 
-        <div className="pointer-events-none absolute right-3 top-3 z-20 sm:right-4 sm:top-4">
+        <div className="pointer-events-none absolute inset-x-3 top-16 z-[1] lg:hidden">
+          <div
+            role="status"
+            aria-live="polite"
+            className={cn(
+              "flex items-center justify-between gap-3 rounded-[1.15rem] border px-3.5 py-2.5 backdrop-blur-xl",
+              mobileStatusPanelTone
+            )}
+          >
+            <div className="min-w-0 flex items-center gap-2.5">
+              <div className={cn("flex h-8 w-8 shrink-0 items-center justify-center rounded-full border", mobileStatusIconTone)}>
+                {showStatusSpinner ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: riskDisplay.color }} />
+                )}
+              </div>
+
+              <div className="min-w-0">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-muted-foreground">Status da analise</p>
+                <p className={cn("truncate text-sm font-semibold", isDarkMode ? "text-slate-100" : "text-slate-900")}>
+                  {statusBadgeLabel}
+                </p>
+              </div>
+            </div>
+
+            <span
+              className={cn(
+                "inline-flex shrink-0 items-center rounded-full border px-2.5 py-1 text-xs font-semibold shadow-sm",
+                riskDisplay.badge
+              )}
+            >
+              {mobileStatusScoreLabel}
+            </span>
+          </div>
+        </div>
+
+        <div className="pointer-events-none absolute right-3 top-3 z-20 hidden lg:block sm:right-4 sm:top-4">
           <div
             className={cn(
               "inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-medium shadow-sm",
@@ -1368,18 +1671,21 @@ export default function GeoRiskMap() {
         <div className="absolute bottom-6 left-1/2 z-30 -translate-x-1/2 lg:hidden">
           <Drawer>
             <DrawerTrigger asChild>
-              <Button size="lg" className="rounded-full px-6 shadow-xl min-h-[48px]">
-                <Layers className="mr-2 h-4 w-4" />
-                Motor de Risco
+              <Button size="lg" className="min-h-[48px] rounded-full px-6 shadow-xl">
+                <Eye className="mr-2 h-4 w-4" />
+                Analise Completa
               </Button>
             </DrawerTrigger>
-            <DrawerContent className="max-h-[85vh]">
+            <DrawerContent className="max-h-[88vh]">
               <DrawerHeader className="text-left pb-2">
-                <DrawerTitle>Motor de Risco</DrawerTitle>
-                <DrawerDescription>Deslize para ver os detalhes da leitura.</DrawerDescription>
+                <DrawerTitle>Analise Completa</DrawerTitle>
+                <DrawerDescription>Feedback da IA primeiro, seguido pelos fatores tecnicos da leitura.</DrawerDescription>
               </DrawerHeader>
               <div className="overflow-y-auto p-4 pt-0">
-                {SidebarContent}
+                <div className="space-y-4">
+                  {renderMobileAiFeedback()}
+                  {renderRiskEngineContent()}
+                </div>
               </div>
             </DrawerContent>
           </Drawer>

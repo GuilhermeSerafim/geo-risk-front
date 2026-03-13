@@ -179,3 +179,43 @@
 .markdown-body p + p {
   margin-top: 0.6rem;
 }
+
+.feedback-markdown p + p {
+  margin-top: 0.8rem;
+}
+
+.feedback-markdown :is(ul, ol) {
+  margin-top: 0.8rem;
+  padding-left: 1.1rem;
+}
+
+.feedback-markdown li + li {
+  margin-top: 0.35rem;
+}
+
+.feedback-markdown strong {
+  font-weight: 600;
+}
+
+@media (max-width: 1023px) {
+  .mapboxgl-ctrl-top-left {
+    top: 0.75rem;
+    left: 0.75rem;
+    right: 0.75rem;
+  }
+
+  .mapboxgl-ctrl-top-left .mapboxgl-ctrl {
+    float: none;
+    margin: 0;
+  }
+
+  .mapboxgl-ctrl-geocoder {
+    width: 100%;
+    min-width: 100%;
+    max-width: none;
+  }
+
+  .mapboxgl-ctrl-geocoder .mapboxgl-ctrl-geocoder--input {
+    height: 46px;
+  }
+}
