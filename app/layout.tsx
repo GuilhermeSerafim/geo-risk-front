@@ -38,17 +38,26 @@ export const metadata: Metadata = {
     description:
       "Risco geoespacial em segundos com score explicavel por topografia, agua e solo.",
     siteName: "GeoRisk",
+    images: [
+      {
+        url: "/logo4.png",
+        width: 384,
+        height: 384,
+        alt: "GeoRisk",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "GeoRisk",
     description:
       "Analise de risco hidrologico com motor auditavel para decisoes urbanas e securitarias.",
+    images: ["/logo4.png"],
   },
   icons: {
-    icon: "/logo3.png",
-    shortcut: "/logo3.png",
-    apple: "/logo3.png",
+    icon: "/logo4.png",
+    shortcut: "/logo4.png",
+    apple: "/logo4.png",
   },
 }
 
